@@ -21,6 +21,7 @@ char* load_text_file(char* filename)
 		return NULL;
 	}
 
+        /* Get file size */
 	fseek(file, 0, SEEK_END);
 	size = ftell(file);
 	fseek(file, 0, SEEK_SET);
@@ -29,6 +30,7 @@ char* load_text_file(char* filename)
 		return NULL;
 	}
 
+        /* Read entire file */
 	buf = malloc(size + 1);
 	if (fread(buf, 1, size, file) != (size_t)size) {
 		free(buf);

@@ -31,6 +31,7 @@ static void push_node(ast_node_t* node)
 {
         node->next = NULL;
 
+        /* Add the node to the doubly linked list */
         if (node->parent->first_child == NULL) {
                 node->prev = NULL;
                 node->parent->first_child = node;
@@ -38,7 +39,6 @@ static void push_node(ast_node_t* node)
                 node->prev = node->parent->last_child;
                 node->parent->last_child->next = node;
         }
-
         node->parent->last_child = node;
 }
 
@@ -47,17 +47,17 @@ static ast_node_t* pop_node(ast_node_t* parent)
         ast_node_t* node;
 
         node = parent->last_child;
-        parent->last_child = node->prev;
-        node->prev = NULL;
 
+        /* Remove the node from the doubly linked list*/
+        parent->last_child = node->prev;
         if (node == parent->first_child) {
                 parent->first_child = NULL;
         }
-
         if (parent->last_child != NULL) {
                 parent->last_child->next = NULL;
         }
 
+        node->prev = NULL;
         return node;
 }
 
@@ -65,6 +65,7 @@ static ast_node_t* parse_lvalue(ast_node_t* operation, token_t* token)
 {
         ast_node_t* left;
 
+        /* Find value or operator */
         switch (token->type) {
         case TT_NUMBER:
                 left = create_node(operation);
@@ -117,6 +118,7 @@ static void parse_expression(token_t* token)
         left = NULL;
         right = NULL;
         while (1) {
+                /* Find lvalue */
                 if (left == NULL) {
                         left = parse_lvalue(operation, token);
                         if (left == NULL) {
@@ -126,6 +128,7 @@ static void parse_expression(token_t* token)
                         continue;
                 }
 
+                /* Find rvalue */
                 if (right == NULL && operation->type != NT_UNKNOWN) {
                         if (token->type == TT_NUMBER) {
                                 right = create_node(operation);
@@ -146,6 +149,7 @@ static void parse_expression(token_t* token)
                         break;
                 }
 
+                /* Find operator */
                 if (left != NULL && right == NULL) {
                         if (token->type == TT_PLUS) {
                                 operation->type = NT_ADD;

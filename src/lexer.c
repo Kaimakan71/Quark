@@ -32,11 +32,13 @@ static void lex_identifier(token_t* token)
 {
 	token->type = TT_IDENTIFIER;
 
+	/* Find identifier length */
 	pos++;
 	while (char_info[*pos] & CHAR_ALNUM) {
 		pos++;
 	}
 	token->length = (size_t)(pos - token->pos);
+
 	token->hash = hash_data(token->pos, token->length);
 }
 
@@ -44,6 +46,7 @@ static void lex_number(token_t* token)
 {
 	token->type = TT_NUMBER;
 
+	/* Calculate value of number */
 	token->value = *pos - '0';
 	pos++;
 	while (char_info[*pos] & CHAR_DIGIT) {
@@ -55,6 +58,7 @@ static void lex_number(token_t* token)
 
 static void lex_special(token_t* token)
 {
+	/* Special cases for operators (like +, +=, ++) */
 	switch (*pos) {
 	case '+':
 		token->type = TT_PLUS;
