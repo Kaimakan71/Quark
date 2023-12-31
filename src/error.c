@@ -12,7 +12,7 @@ void error(token_t* token, char* fmt, ...)
 {
 	va_list ap;
 
-	fprintf(stderr, "%d:%d: lexical error: ", token->line, token->column);
+	fprintf(stderr, "%d:%d: error: ", token->line, token->column);
 
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);

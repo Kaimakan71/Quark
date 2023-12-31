@@ -10,7 +10,10 @@
 
 typedef enum {
         NT_UNKNOWN,
+
+        NT_VARIABLE,
         NT_NUMBER,
+
         NT_ADD,
         NT_SUBTRACT,
         NT_MULTIPLY,
@@ -20,7 +23,15 @@ typedef enum {
 typedef struct ast_node {
         node_type_t type;
 
-        uint64_t value;
+        union {
+                struct {
+                        char* string;
+                        size_t length;
+                        uint32_t hash;
+                } name;
+
+                uint64_t value;
+        };
 
         struct ast_node* parent;
         struct ast_node* first_child;

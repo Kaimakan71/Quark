@@ -181,6 +181,30 @@ static void parse_expression(token_t* token)
         }
 }
 
+void parse_variable(token_t* token)
+{
+        ast_node_t* variable;
+
+        variable = create_node(&root_node);
+        variable->type = NT_VARIABLE;
+
+        lexer_next(token);
+        if (token->type == TT_IDENTIFIER) {
+                variable->name.string = token->pos;
+                variable->name.length = token->length;
+                variable->name.hash = token->hash;
+        }
+
+        lexer_next(token);
+        if (token->type != TT_SEMICOLON) {
+                error(token, "Expected semicolon after variable name\n");
+                return;
+        }
+
+        push_node(variable);
+        lexer_next(token);
+}
+
 ast_node_t* parse(char* source)
 {
         token_t token;
@@ -191,6 +215,11 @@ ast_node_t* parse(char* source)
         while (token.type != TT_EOF) {
                 if (token.type == TT_NUMBER) {
                         parse_expression(&token);
+                        continue;
+                }
+
+                if (token.type == TT_UINT) {
+                        parse_variable(&token);
                         continue;
                 }
 

@@ -52,8 +52,8 @@ uint16_t char_info[256] = {
 		89:;
 		<=>?
 	*/
-	CHAR_DIGIT  , CHAR_DIGIT  , 0           , 0           ,
-	0           , 0           , 0           , 0           ,
+	CHAR_DIGIT  , CHAR_DIGIT  , 0           , CHAR_SEMI   ,
+	0           , CHAR_SPECIAL, 0           , 0           ,
 	/*
 		@ABC
 		DEFG

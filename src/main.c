@@ -53,6 +53,21 @@ void dump_tree(ast_node_t* root_node)
         while (1) {
                 printf("%*s", indent, "");
 
+                if (node->type == NT_VARIABLE) {
+                        printf("Variable (name=%.*s)\n", node->name.length, node->name.string);
+
+                        if (node->next != NULL) {
+                                node = node->next;
+                        } else if (node->parent->next != NULL) {
+                                node = node->parent->next;
+                                indent -= 4;
+                        } else {
+                                break;
+                        }
+
+                        continue;
+                }
+
                 if (node->type == NT_NUMBER) {
                         printf("Number (value=%lu)\n", node->value);
 

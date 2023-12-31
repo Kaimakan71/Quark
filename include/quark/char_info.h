@@ -7,6 +7,7 @@
 #define _QUARK_CHAR_INFO_H
 
 #include <stdint.h>
+#include "quark/lexer.h"
 
 #define CHAR_HORZ_WS (1 << 0)
 #define CHAR_VERT_WS (1 << 1)
@@ -15,12 +16,16 @@
 #define CHAR_UPPER   (1 << 4)
 #define CHAR_LOWER   (1 << 5)
 #define CHAR_SPECIAL (1 << 6)
+#define CHAR_SINGLE  (1 << 7)
 
 #define CHAR_XUPPER     (CHAR_XDIGIT | CHAR_UPPER)
 #define CHAR_XLOWER     (CHAR_XDIGIT | CHAR_LOWER)
 #define CHAR_WHITESPACE (CHAR_HORZ_WS | CHAR_VERT_WS)
 #define CHAR_ALPHA      (CHAR_UPPER | CHAR_LOWER)
 #define CHAR_ALNUM      (CHAR_ALPHA | CHAR_DIGIT)
+
+#define MAKE_SINGLE(type) ((type << 8) | CHAR_SINGLE)
+#define CHAR_SEMI MAKE_SINGLE(TT_SEMICOLON)
 
 extern uint16_t char_info[256];
 

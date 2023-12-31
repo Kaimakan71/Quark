@@ -3,15 +3,47 @@
  * Copyright (c) 2023, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
+#include <string.h>
 #include "quark/error.h"
 #include "quark/char_info.h"
 #include "quark/hash.h"
 #include "quark/lexer.h"
 
+typedef struct keyword {
+	char* string;
+	size_t length;
+	uint32_t hash;
+
+	token_type_t token_type;
+
+	struct keyword* next;
+} keyword_t;
+
 static char* input;
 static char* pos;
 static char* line_start;
 static int line;
+static keyword_t* keywords_head;
+static keyword_t* keywords_tail;
+
+static void add_keyword(char* string, token_type_t token_type)
+{
+	keyword_t* keyword;
+
+	keyword = malloc(sizeof(keyword_t));
+	keyword->string = string;
+	keyword->length = strlen(string);
+	keyword->hash = hash_data(keyword->string, keyword->length);
+	keyword->token_type = token_type;
+	keyword->next = NULL;
+
+	if (keywords_head == NULL) {
+		keywords_head = keyword;
+	} else {
+		keywords_tail->next = keyword;
+	}
+	keywords_tail = keyword;
+}
 
 static void skip_whitespace(void)
 {
@@ -39,7 +71,14 @@ static void lex_identifier(token_t* token)
 	}
 	token->length = (size_t)(pos - token->pos);
 
+	/* Find the keyword associated with this identifier */
 	token->hash = hash_data(token->pos, token->length);
+	for (keyword_t* keyword = keywords_head; keyword != NULL; keyword = keyword->next) {
+		if (token->hash == keyword->hash && token->length == keyword->length) {
+			token->type = keyword->token_type;
+			break;
+		}
+	}
 }
 
 static void lex_number(token_t* token)
@@ -60,27 +99,29 @@ static void lex_special(token_t* token)
 {
 	/* Special cases for operators (like +, +=, ++) */
 	switch (*pos) {
+	case '=':
+		token->type = TT_EQUALS;
+		token->length = 1;
+		break;
 	case '+':
 		token->type = TT_PLUS;
 		token->length = 1;
-		pos++;
 		break;
 	case '-':
 		token->type = TT_MINUS;
 		token->length = 1;
-		pos++;
 		break;
 	case '*':
 		token->type = TT_STAR;
 		token->length = 1;
-		pos++;
 		break;
 	case '/':
 		token->type = TT_SLASH;
 		token->length = 1;
-		pos++;
 		break;
 	}
+
+	pos += token->length;
 }
 
 void lexer_next(token_t* token)
@@ -98,6 +139,13 @@ void lexer_next(token_t* token)
 
 	if (char_info[*pos] & CHAR_DIGIT) {
 		lex_number(token);
+		return;
+	}
+
+	if (char_info[*pos] & CHAR_SINGLE) {
+		token->type = char_info[*pos] >> 8;
+		token->length = 1;
+		pos++;
 		return;
 	}
 
@@ -121,4 +169,6 @@ void lexer_init(char* source)
 	pos = input;
 	line_start = pos;
 	line = 1;
+
+	add_keyword("uint", TT_UINT);
 }

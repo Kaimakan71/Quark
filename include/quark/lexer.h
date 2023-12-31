@@ -11,12 +11,18 @@
 typedef enum {
 	TT_UNKNOWN,
 	TT_EOF,
+
 	TT_IDENTIFIER,
 	TT_NUMBER,
+
+	TT_SEMICOLON,
+	TT_EQUALS,
 	TT_PLUS,
 	TT_MINUS,
 	TT_STAR,
-	TT_SLASH
+	TT_SLASH,
+
+	TT_UINT
 } token_type_t;
 
 typedef struct {
