@@ -1,2 +1,1 @@
-uint result;
-4 * 3 + 7 / 1
+uint result = 4 * 3 + 7 / 1;
