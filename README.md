@@ -8,6 +8,6 @@ Run `make test` to try compiling `test.quark`.
 
 # TODO
 - [ ] Functions
-        - [ ] Return value
-        - [ ] Arguments
+  - [ ] Return value
+  - [ ] Arguments
 - [ ] Assembly language output

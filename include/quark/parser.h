@@ -11,6 +11,7 @@
 typedef enum {
         NT_UNKNOWN,
 
+        NT_FUNCTION,
         NT_VARIABLE,
         NT_NUMBER,
 

@@ -81,16 +81,37 @@ static void lex_identifier(token_t* token)
 	}
 }
 
-static void lex_number(token_t* token)
+static void lex_number_base10(token_t* token)
 {
 	token->type = TT_NUMBER;
 
-	/* Calculate value of number */
+	/* Calculate value of decimal number */
 	token->value = *pos - '0';
 	pos++;
 	while (char_info[*pos] & CHAR_DIGIT) {
 		token->value *= 10;
 		token->value += *pos++ - '0';
+	}
+	token->length = (size_t)(pos - token->pos);
+}
+
+static void lex_number_base16(token_t* token)
+{
+	token->type = TT_NUMBER;
+
+	/* Calculate value of hex number */
+	token->value = 0;
+	pos += 2;
+	while (char_info[*pos] & CHAR_HEX) {
+		token->value <<= 4;
+
+		if (char_info[*pos] == CHAR_XUPPER) {
+			token->value |= *pos++ - 'A' + 10;
+		} else if (char_info[*pos] == CHAR_XLOWER) {
+			token->value |= *pos++ - 'a' + 10;
+		} else {
+			token->value |= *pos++ - '0';
+		}
 	}
 	token->length = (size_t)(pos - token->pos);
 }
@@ -138,7 +159,11 @@ void lexer_next(token_t* token)
 	}
 
 	if (char_info[*pos] & CHAR_DIGIT) {
-		lex_number(token);
+		if (pos[0] == '0' && pos[1] == 'x') {
+			lex_number_base16(token);
+		} else {
+			lex_number_base10(token);
+		}
 		return;
 	}
 
@@ -170,5 +195,6 @@ void lexer_init(char* source)
 	line_start = pos;
 	line = 1;
 
+	add_keyword("function", TT_FUNCTION);
 	add_keyword("uint", TT_UINT);
 }

@@ -40,7 +40,7 @@ uint16_t char_info[256] = {
 		()*+
 		,-./
 	*/
-	0           , 0           , CHAR_SPECIAL, CHAR_SPECIAL,
+	CHAR_LPAREN , CHAR_RPAREN , CHAR_SPECIAL, CHAR_SPECIAL,
 	0           , CHAR_SPECIAL, 0           , CHAR_SPECIAL,
 	/*
 		0123
@@ -100,6 +100,6 @@ uint16_t char_info[256] = {
 		xyz{
 		|}~
 	*/
-	CHAR_LOWER  , CHAR_LOWER  , CHAR_LOWER  , 0           ,
-	0           , 0           , 0           , 0           ,
+	CHAR_LOWER  , CHAR_LOWER  , CHAR_LOWER  , CHAR_LCURLY ,
+	0           , CHAR_RCURLY , 0           , 0           ,
 };

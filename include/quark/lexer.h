@@ -16,12 +16,18 @@ typedef enum {
 	TT_NUMBER,
 
 	TT_SEMICOLON,
+	TT_LPAREN,
+	TT_RPAREN,
+	TT_LCURLY,
+	TT_RCURLY,
+
 	TT_EQUALS,
 	TT_PLUS,
 	TT_MINUS,
 	TT_STAR,
 	TT_SLASH,
 
+	TT_FUNCTION,
 	TT_UINT
 } token_type_t;
 

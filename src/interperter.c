@@ -36,6 +36,10 @@ void interpert(ast_node_t* root_node)
 
         node = root_node->first_child;
         while (node != NULL) {
+                if (node->type == NT_FUNCTION) {
+                        printf("Declare function %.*s\n", node->name.length, node->name.string);
+                }
+
                 if (node->type == NT_VARIABLE) {
                         printf("Initialize %.*s to %ld\n", node->name.length, node->name.string, get_value(node->first_child));
                 }

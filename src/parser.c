@@ -206,7 +206,7 @@ void parse_variable(token_t* token)
                 lexer_next(token);
                 parse_expression(variable, token);
                 if (token->type != TT_SEMICOLON) {
-                        error(token, "Expected semicolon after variable initialization\n");
+                        error(token, "Expected \";\" after variable initialization\n");
                         return;
                 }
 
@@ -215,7 +215,44 @@ void parse_variable(token_t* token)
                 return;
         }
 
-        error(token, "Expected semicolon or expression after \"=\"\n");
+        error(token, "Expected \";\" or expression after \"=\"\n");
+}
+
+void parse_function(token_t* token)
+{
+        ast_node_t* function;
+
+        function = create_node(&root_node);
+        function->type = NT_FUNCTION;
+
+        lexer_next(token);
+        if (token->type == TT_IDENTIFIER) {
+                function->name.string = token->pos;
+                function->name.length = token->length;
+                function->name.hash = token->hash;
+        }
+
+        lexer_next(token);
+        if (token->type != TT_LPAREN) {
+                error(token, "Expected \"(\" after function name\n");
+                return;
+        }
+
+        /* TODO: Function arguments */
+        lexer_next(token);
+        if (token->type != TT_RPAREN) {
+                error(token, "Expected \")\" after \"(\"\n");
+                return;
+        }
+
+        /* TODO: Function defintions (bodies) */
+        lexer_next(token);
+        if (token->type != TT_SEMICOLON) {
+                error(token, "Expected \";\" after \")\"\n");
+        }
+
+        push_node(function);
+        lexer_next(token);
 }
 
 ast_node_t* parse(char* source)
@@ -226,6 +263,11 @@ ast_node_t* parse(char* source)
         lexer_next(&token);
         memset(&root_node, 0, sizeof(ast_node_t));
         while (token.type != TT_EOF) {
+                if (token.type == TT_FUNCTION) {
+                        parse_function(&token);
+                        continue;
+                }
+
                 if (token.type == TT_UINT) {
                         parse_variable(&token);
                         continue;
