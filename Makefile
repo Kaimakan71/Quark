@@ -1,5 +1,5 @@
 # Compiler build configuration.
-# Copyright (c) 2023, Kaimakan71 and Quark contributors.
+# Copyright (c) 2023-2023, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
 ifeq ($(OS), Windows_NT)
 BINARY = quarkc.exe
@@ -7,7 +7,7 @@ else
 BINARY = quarkc
 endif
 BINARY = quarkc
-OFILES = src/error.o src/char_info.o src/hash.o src/lexer.o src/parser.o src/main.o
+OFILES = src/error.o src/char_info.o src/hash.o src/lexer.o src/parser.o src/interperter.o src/main.o
 CFLAGS = -I include
 LDFLAGS =
 

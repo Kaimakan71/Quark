@@ -1,6 +1,6 @@
 /*
  * Error output functions.
- * Copyright (c) 2023, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2023, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
 #ifndef _QUARK_ERROR_H

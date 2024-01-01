@@ -1,11 +1,12 @@
 /*
  * Parses arguments and manages compile process.
- * Copyright (c) 2023, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2023, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
 #include <stdlib.h>
 #include <stdio.h>
 #include "quark/parser.h"
+#include "quark/interperter.h"
 
 static char* filename;
 static char* input;
@@ -43,56 +44,6 @@ char* load_text_file(char* filename)
 	return buf;
 }
 
-void dump_tree(ast_node_t* root_node)
-{
-        ast_node_t* node;
-        int indent;
-
-        node = root_node->first_child;
-        indent = 0;
-        while (1) {
-                printf("%*s", indent, "");
-
-                if (node->type == NT_NUMBER) {
-                        printf("Number (value=%lu)\n", node->value);
-
-                        if (node->next != NULL) {
-                                node = node->next;
-                        } else if (node->parent->next != NULL) {
-                                node = node->parent->next;
-                                indent -= 4;
-                        } else {
-                                break;
-                        }
-
-                        continue;
-                }
-
-                switch(node->type) {
-                case NT_VARIABLE:
-                        printf("Variable (name=%.*s)\n", node->name.length, node->name.string);
-                        break;
-                case NT_ADD:
-                        printf("Add\n");
-                        break;
-                case NT_SUBTRACT:
-                        printf("Subtract\n");
-                        break;
-                case NT_MULTIPLY:
-                        printf("Multiply\n");
-                        break;
-                case NT_DIVIDE:
-                        printf("Divide\n");
-                        break;
-                default:
-                        printf("Unknown\n");
-                        break;
-                }
-                node = node->first_child;
-                indent += 4;
-        }
-}
-
 int main(int argc, char* argv[])
 {
 	if (argc < 2) {
@@ -107,7 +58,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-        dump_tree(parse(input));
+        interpert(parse(input));
 
 	free(input);
 	return 0;

@@ -1,6 +1,6 @@
 /*
  * Analyzes tokens to create an AST tree.
- * Copyright (c) 2023, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2023, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
 #include <stdlib.h>
@@ -91,7 +91,7 @@ static ast_node_t* parse_lvalue(ast_node_t* operation, token_t* token)
         }
 
         /* Apply order of operations */
-        if (operation->type == NT_MULTIPLY || operation->type == NT_DIVIDE) {
+        if ((operation->type == NT_MULTIPLY || operation->type == NT_DIVIDE) && (operation->prev->type == NT_ADD || operation->prev->type == NT_SUBTRACT)) {
                 operation->parent = operation->prev;
                 left = pop_node(operation->parent);
                 left->parent = operation;
@@ -226,11 +226,6 @@ ast_node_t* parse(char* source)
         lexer_next(&token);
         memset(&root_node, 0, sizeof(ast_node_t));
         while (token.type != TT_EOF) {
-                if (token.type == TT_NUMBER) {
-                        parse_expression(&root_node, &token);
-                        continue;
-                }
-
                 if (token.type == TT_UINT) {
                         parse_variable(&token);
                         continue;
