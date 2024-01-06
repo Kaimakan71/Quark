@@ -1,6 +1,6 @@
 /*
  * Character info table.
- * Copyright (c) 2023-2023, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
 #include "quark/char_info.h"

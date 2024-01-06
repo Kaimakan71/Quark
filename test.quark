@@ -1,3 +1,2 @@
-function example();
-uint test1 = 0xdEaDbEeF / 2;
-uint test2 = 3 * 4 / 12 - 4;
+uint test1 = 32 * 4 + 5;
+uint test2 = 7 * 3;

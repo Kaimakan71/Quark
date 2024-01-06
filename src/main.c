@@ -1,11 +1,12 @@
 /*
  * Parses arguments and manages compile process.
- * Copyright (c) 2023-2023, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
 #include <stdlib.h>
 #include <stdio.h>
 #include "quark/parser.h"
+/* #include "quark/codegen.h" */
 #include "quark/interperter.h"
 
 static char* filename;
@@ -46,6 +47,8 @@ char* load_text_file(char* filename)
 
 int main(int argc, char* argv[])
 {
+	ast_node_t* root_node;
+
 	if (argc < 2) {
 		fprintf(stderr, "No input files\n");
 		return -1;
@@ -58,7 +61,9 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-        interpert(parse(input));
+	root_node = parse(input);
+        /* codegen(root_node, stdout); */
+	interpert(root_node);
 
 	free(input);
 	return 0;

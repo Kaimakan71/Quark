@@ -1,6 +1,6 @@
 /*
  * Analyzes tokens to create an AST tree.
- * Copyright (c) 2023-2023, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
 #ifndef _QUARK_PARSER_H
@@ -12,6 +12,7 @@ typedef enum {
         NT_UNKNOWN,
 
         NT_FUNCTION,
+        NT_FUNCTION_CALL,
         NT_VARIABLE,
         NT_NUMBER,
 
