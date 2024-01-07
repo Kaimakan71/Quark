@@ -7,12 +7,45 @@
 #include <stdio.h>
 #include <string.h>
 #include "quark/error.h"
+#include "quark/hash.h"
 #include "quark/lexer.h"
 #include "quark/parser.h"
 
 static char* filename;
 static char* input;
 static ast_node_t* root;
+static data_type_t* types_head;
+static data_type_t* types_tail;
+
+static data_type_t* create_type(void)
+{
+	data_type_t* type;
+
+	type = malloc(sizeof(data_type_t));
+	type->next = NULL;
+
+	if (types_head == NULL) {
+		types_head = type;
+	} else {
+		types_tail->next = type;
+	}
+	types_tail = type;
+
+	return type;
+}
+
+
+static void create_builtin_type(char* name, size_t bits, uint8_t flags)
+{
+	data_type_t* type;
+
+	type = create_type();
+	type->name.string = name;
+	type->name.length = strlen(type->name.string);
+	type->name.hash = hash_data(type->name.string, type->name.length);
+	type->bits = bits;
+	type->flags = flags;
+}
 
 static ast_node_t* create_node(ast_node_t* parent)
 {
@@ -84,6 +117,28 @@ static void free_nodes(ast_node_t* parent)
         }
 }
 
+static data_type_t* find_type(token_t* name)
+{
+	for (data_type_t* type = types_head; type != NULL; type = type->next) {
+		if (type->name.hash == name->hash && type->name.length == name->length) {
+			return type;
+		}
+	}
+
+	return NULL;
+}
+
+static ast_node_t* find_variable(ast_node_t* scope, token_t* name)
+{
+	for (ast_node_t* node = scope->first_child; node != NULL; node = node->next) {
+		if (node->type == NT_VARIABLE && node->name.hash == name->hash && node->name.length == name->length) {
+			return node;
+		}
+	}
+
+	return NULL;
+}
+
 static node_type_t parse_operator(token_t* token)
 {
         switch (token->type) {
@@ -104,7 +159,6 @@ static ast_node_t* parse_lvalue(ast_node_t* operation, token_t* token)
 {
         ast_node_t* left;
 
-        /* TODO: Allow identifiers as operands */
         if (token->type == TT_NUMBER) {
                 left = create_node(operation);
                 left->type = NT_NUMBER;
@@ -113,6 +167,22 @@ static ast_node_t* parse_lvalue(ast_node_t* operation, token_t* token)
                 lexer_next(token);
                 return left;
         }
+
+	if (token->type == TT_IDENTIFIER) {
+		left = create_node(operation);
+		left->type = NT_VARIABLE;
+		left->reference = find_variable(root, token);
+		if (left->reference == NULL) {
+			error(token, "Variable '%.*s' not found\n", token->length, token->pos);
+			free_nodes(left);
+			lexer_next(token);
+			return NULL;
+		}
+
+		push_node(left);
+		lexer_next(token);
+		return left;
+	}
 
         /* Operator for compound operations (like 2+3/5) */
         operation->type = parse_operator(token);
@@ -127,10 +197,38 @@ static ast_node_t* parse_lvalue(ast_node_t* operation, token_t* token)
         }
         left = pop_node(operation->parent);
         left->parent = operation;
-        lexer_next(token);
-        push_node(left);
 
+        push_node(left);
+	lexer_next(token);
         return left;
+}
+
+static ast_node_t* parse_rvalue(ast_node_t* operation, token_t* token)
+{
+	ast_node_t* right;
+
+        if (token->type == TT_NUMBER) {
+                right = create_node(operation);
+                right->type = NT_NUMBER;
+                right->value = token->value;
+        } else if (token->type == TT_IDENTIFIER) {
+		right = create_node(operation);
+		right->type = NT_VARIABLE;
+		right->reference = find_variable(root, token);
+		if (right->reference == NULL) {
+			error(token, "Variable '%.*s' not found\n", token->length, token->pos);
+			free_nodes(right);
+			lexer_next(token);
+			return NULL;
+		}
+	} else {
+		error(token, "Expected right-hand operand after operator\n");
+		return NULL;
+	}
+
+        push_node(right);
+        lexer_next(token);
+	return right;
 }
 
 static void parse_expression(ast_node_t* parent, token_t* token)
@@ -147,9 +245,8 @@ static void parse_expression(ast_node_t* parent, token_t* token)
                 /* Find lvalue */
                 if (left == NULL) {
                         left = parse_lvalue(operation, token);
-
-                        /* End of expression */
                         if (left == NULL) {
+                        	/* End of expression */
                                 break;
                         }
 
@@ -158,23 +255,17 @@ static void parse_expression(ast_node_t* parent, token_t* token)
 
                 /* Find rvalue */
                 if (right == NULL && operation->type != NT_UNKNOWN) {
-                        /* TODO: Allow identifiers as operands */
-                        if (token->type != TT_NUMBER) {
-                                error(token, "Expected right-hand operand after operator\n");
-                                break;
-                        }
+			right = parse_rvalue(operation, token);
+			if (right == NULL) {
+				/* Invalid rvalue */
+				break;
+			}
 
-                        right = create_node(operation);
-                        right->type = NT_NUMBER;
-                        right->value = token->value;
-                        push_node(right);
-                        lexer_next(token);
-
-                        push_node(operation);
-                        operation = create_node(operation->parent);
-                        operation->type = NT_UNKNOWN;
-                        left = NULL;
-                        right = NULL;
+        		push_node(operation);
+			operation = create_node(operation->parent);
+        		operation->type = NT_UNKNOWN;
+        		left = NULL;
+        		right = NULL;
                         continue;
                 }
 
@@ -202,7 +293,14 @@ static void parse_variable(ast_node_t* parent, token_t* token)
         variable = create_node(parent);
         variable->type = NT_VARIABLE;
 
-        /* TODO: Variable types */
+	variable->data_type = find_type(token);
+	if (variable->data_type == NULL) {
+		error(token, "Type '%.*s' not found\n", token->length, token->pos);
+		free_nodes(variable);
+		lexer_next(token);
+		return;
+	}
+
         lexer_next(token);
         if (token->type != TT_IDENTIFIER) {
                 error(token, "Expected identifier after type name\n");
@@ -323,6 +421,9 @@ ast_node_t* parse(char* source)
         token_t token;
 
         root = create_node(NULL);
+	types_head = NULL;
+	create_builtin_type("uint", 64, TF_NONE);
+	create_builtin_type("int", 64, TF_SIGNED);
 
         lexer_init(source);
         lexer_next(&token);
@@ -333,12 +434,8 @@ ast_node_t* parse(char* source)
                 }
 
                 if (token.type == TT_IDENTIFIER) {
-                        parse_function_call(root, &token);
-                        continue;
-                }
-
-                if (token.type == TT_UINT) {
-                        parse_variable(root, &token);
+                        /* parse_function_call(root, &token); */
+			parse_variable(root, &token);
                         continue;
                 }
 

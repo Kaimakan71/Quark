@@ -196,5 +196,4 @@ void lexer_init(char* source)
 	line = 1;
 
 	add_keyword("function", TT_FUNCTION);
-	add_keyword("uint", TT_UINT);
 }

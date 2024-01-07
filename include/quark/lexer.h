@@ -7,6 +7,7 @@
 #define _QUARK_LEXER_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef enum {
 	TT_UNKNOWN,
@@ -27,8 +28,7 @@ typedef enum {
 	TT_STAR,
 	TT_SLASH,
 
-	TT_FUNCTION,
-	TT_UINT
+	TT_FUNCTION
 } token_type_t;
 
 typedef struct {

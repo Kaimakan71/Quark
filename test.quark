@@ -1,2 +1,3 @@
-uint test1 = 32 * 4 + 5;
-uint test2 = 7 * 3;
+uint var1 = 32 * 4 + 5;
+uint var2 = var1 * 3;
+uint var3 = var2 * var2;

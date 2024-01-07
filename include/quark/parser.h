@@ -7,6 +7,7 @@
 #define _QUARK_PARSER_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef enum {
         NT_UNKNOWN,
@@ -22,18 +23,29 @@ typedef enum {
         NT_DIVIDE
 } node_type_t;
 
+#define TF_NONE 0
+#define TF_SIGNED (1 << 0)
+
+typedef struct {
+        char* string;
+        size_t length;
+        uint32_t hash;
+} name_t;
+
+typedef struct data_type {
+	name_t name;
+	size_t bits;
+	uint8_t flags;
+
+	struct data_type* next;
+} data_type_t;
+
 typedef struct ast_node {
         node_type_t type;
-
-        union {
-                struct {
-                        char* string;
-                        size_t length;
-                        uint32_t hash;
-                } name;
-
-                uint64_t value;
-        };
+	name_t name;
+	data_type_t* data_type;
+	uint64_t value;
+	struct ast_node* reference;
 
         struct ast_node* parent;
         struct ast_node* first_child;
