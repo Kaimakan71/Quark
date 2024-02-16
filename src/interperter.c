@@ -41,7 +41,7 @@ void interpert(ast_node_t* root_node)
         node = root_node->first_child;
         while (node != NULL) {
                 if (node->type == NT_VARIABLE) {
-			            node->value = get_value(node->first_child);
+                        node->value = get_value(node->first_child);
                         printf("%.*s = %ld\n", node->name.length, node->name.string, node->value);
                 }
 
