@@ -3,13 +3,28 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <codegen/codegen.h>
 #include <parser/parser.h>
 
-char* load_text_file(char* filename)
+typedef struct {
+        char* name;
+        char* description;
+        char** value;
+} param_t;
+
+char* input_filename = NULL;
+char* output_filename = NULL;
+
+static param_t params[] = {
+        { "-i", "input filename", &input_filename },
+        { "-o", "output filename", &output_filename }
+};
+
+static char* load_text_file(char* filename)
 {
         FILE* file;
         long size;
@@ -42,57 +57,51 @@ char* load_text_file(char* filename)
         return buf;
 }
 
+void parse_args(int argc, char* argv[])
+{
+        bool found;
+
+        for (int i = 1; i < argc; i++) {
+                found = false;
+
+                for (int j = 0; j < (sizeof(params) / sizeof(params[0])); j++) {
+                        if (strcmp(argv[i], params[j].name) != 0) {
+                                continue;
+                        }
+
+                        found = true;
+
+                        if (argc < i + 1) {
+                                fprintf(stderr, "expected %s after %s\n", params[j].description, params[j].name);
+                                return;
+                        }
+
+                        if (*params[j].value != NULL) {
+                                fprintf(stderr, "%s cannot be used more than once\n", params[j].name);
+                                return;
+                        }
+
+                        *params[j].value = argv[++i];
+                }
+
+                if (!found) {
+                        fprintf(stderr, "Invalid argument \"%s\"\n", argv[i]);
+                        return;
+                }
+        }
+}
+
 int main(int argc, char* argv[])
 {
-        char* input_filename = NULL;
-        char* output_filename = NULL;
         char* input;
         FILE* output_file;
         ast_node_t* root;
         ast_node_t* strings;
 
-        if (argc < 2) {
-                fprintf(stderr, "Not enough arguments\n");
-                return 1;
-        }
-
-        for (int i = 1; i < argc; i++) {
-                if (strcmp(argv[i], "-c") == 0) {
-                        if (argc < i + 1) {
-                                fprintf(stderr, "-c must be followed by the input filename\n");
-                                return 1;
-                        }
-
-                        if (input_filename != NULL) {
-                                fprintf(stderr, "Input filename already specified\n");
-                                return 1;
-                        }
-
-                        input_filename = argv[++i];
-                        continue;
-                }
-
-                if (strcmp(argv[i], "-o") == 0) {
-                        if (argc < i + 1) {
-                                fprintf(stderr, "-o must be followed by the output filename\n");
-                                return 1;
-                        }
-
-                        if (output_filename != NULL) {
-                                fprintf(stderr, "Output filename already specified\n");
-                                return 1;
-                        }
-
-                        output_filename = argv[++i];
-                        continue;
-                }
-
-                fprintf(stderr, "Unrecognized option \"%s\"\n", argv[i]);
-                return 1;
-        }
+        parse_args(argc, argv);
 
         if (input_filename == NULL || output_filename == NULL) {
-                fprintf(stderr, "Input and output filenames must be specified\n");
+                fprintf(stderr, "Both an input and output filename must be set\n");
                 return 1;
         }
 

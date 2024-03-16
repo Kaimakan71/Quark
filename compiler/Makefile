@@ -23,8 +23,8 @@ $(BINARY): $(OFILES)
 
 test:
 	@echo Running compiler tests...
-	@./$(BINARY) -c tests/exit.quark -o tests/exit.asm
-	@./$(BINARY) -c tests/write.quark -o tests/write.asm
+	@./$(BINARY) -i tests/exit.quark -o tests/exit.asm
+	@./$(BINARY) -i tests/write.quark -o tests/write.asm
 
 clean:
 	@echo Cleaning compiler...
