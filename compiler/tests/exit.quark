@@ -1,0 +1,5 @@
+proc exit(uint status);
+
+proc main() {
+	exit(69);
+}

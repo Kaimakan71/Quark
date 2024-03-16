@@ -1,0 +1,7 @@
+proc exit(uint code);
+proc write(uint fd, char* buf, uint count);
+
+proc main() {
+	write(1, "Hello, wold!", 12);
+	exit(0);
+}

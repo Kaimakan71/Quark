@@ -3,11 +3,11 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
-#ifndef _QUARK_ERROR_H
-#define _QUARK_ERROR_H
+#ifndef _ERROR_H
+#define _ERROR_H
 
-#include "quark/lexer.h"
+#include <lexer/token.h>
 
 void error(token_t* token, char* fmt, ...);
 
-#endif /* _QUARK_ERROR_H */
+#endif /* _ERROR_H */

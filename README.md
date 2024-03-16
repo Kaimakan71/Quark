@@ -1,13 +1,7 @@
 # Quark
-Programming language and compiler project.
+Quark is a general-purpose compiled programming language intended for use in many environments, from kernels to games to embedded systems. Its syntax is most similar to C or C++, but also attempts to be more consistent and readable.
 
-# Building
+# Building the Compiler
 Run `make`. Parallel builds can be run with `make -j<number of threads>`.
-Run `make clean` to delete all binaries, except for `quarkc`.
-Run `make test` to try compiling `test.quark`.
-
-# TODO
-- [ ] Functions
-  - [ ] Return value
-  - [ ] Arguments
-- [ ] Assembly language output
+Run `make clean` to delete all binaries, except for `quarkc` (the compiler).
+Run `make test` to run compiler tests (which are in the `test` directory).

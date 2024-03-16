@@ -5,16 +5,15 @@
  */
 #include <stdarg.h>
 #include <stdio.h>
-#include "quark/error.h"
-#include "quark/lexer.h"
+#include <error.h>
 
 void error(token_t* token, char* fmt, ...)
 {
-	va_list ap;
+        va_list ap;
 
-	fprintf(stderr, "%d:%d: error: ", token->line, token->column);
+        fprintf(stderr, "%d:%d: error: ", token->line, token->column);
 
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
+        va_start(ap, fmt);
+        vfprintf(stderr, fmt, ap);
+        va_end(ap);
 }
