@@ -41,8 +41,7 @@ static void generate_procedure(ast_node_t* procedure)
 {
         ast_node_t* node;
 
-        fprintf(out, "\nglobal %.*s\n", procedure->name.length, procedure->name.string);
-        fprintf(out, "%.*s:\n", procedure->name.length, procedure->name.string);
+        fprintf(out, "\nglobal %.*s\n%.*s:\n  push rbp\n  mov rbp, rsp\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
 
         node = procedure->children.head;
         while (node != NULL) {
@@ -58,7 +57,7 @@ static void generate_procedure(ast_node_t* procedure)
                 break;
         }
 
-        fprintf(out, "  ret\n");
+        fprintf(out, "  leave\n  ret\n");
 }
 
 void codegen(ast_node_t* root, ast_node_t* strings, FILE* _out)
