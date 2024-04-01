@@ -34,14 +34,14 @@ uint16_t char_info[256] = {
                  !"#
                 $%&'
         */
-        CHAR_HORZ_WS, CHAR_OPER   , 0           , 0           ,
-        0           , CHAR_OPER   , CHAR_OPER   , 0           ,
+        CHAR_HORZ_WS, CHAR_EXCLAM , 0           , 0           ,
+        0           , CHAR_PERCENT, CHAR_AMP    , 0           ,
         /*
                 ()*+
                 ,-./
         */
-        CHAR_LPAREN , CHAR_RPAREN , CHAR_OPER   , CHAR_OPER   ,
-        CHAR_COMMA  , CHAR_OPER   , CHAR_DOT    , CHAR_OPER   ,
+        CHAR_LPAREN , CHAR_RPAREN , CHAR_STAR   , CHAR_OPER   ,
+        CHAR_COMMA  , CHAR_OPER   , CHAR_DOT    , CHAR_SLASH  ,
         /*
                 0123
                 4567
@@ -53,7 +53,7 @@ uint16_t char_info[256] = {
                 <=>?
         */
         CHAR_DIGIT  , CHAR_DIGIT  , CHAR_COLON  , CHAR_SEMI   ,
-        CHAR_OPER   , CHAR_OPER   , CHAR_OPER   , 0           ,
+        CHAR_LESS   , CHAR_EQUALS , CHAR_GREATER, 0           ,
         /*
                 @ABC
                 DEFG
@@ -77,7 +77,7 @@ uint16_t char_info[256] = {
                 \]^_
         */
         CHAR_UPPER  , CHAR_UPPER  , CHAR_UPPER  , CHAR_LSQUARE,
-        0           , CHAR_RSQUARE, CHAR_OPER   , 0           ,
+        0           , CHAR_RSQUARE, CHAR_CARET  , 0           ,
         /*
                 `abc
                 defg
@@ -101,5 +101,5 @@ uint16_t char_info[256] = {
                 |}~
         */
         CHAR_LOWER  , CHAR_LOWER  , CHAR_LOWER  , CHAR_LCURLY ,
-        CHAR_OPER   , CHAR_RCURLY , CHAR_OPER   , 0           ,
+        CHAR_PIPE   , CHAR_RCURLY , CHAR_OPER   , 0           ,
 };

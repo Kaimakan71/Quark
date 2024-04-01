@@ -56,7 +56,8 @@ static void lex_operator(token_t* token)
 {
         token->length = 1;
 
-        if (*pos == '+') {
+	switch (*pos) {
+	case '+':
                 if (pos[1] == '+') {
                         token->kind = TK_INCREMENT;
                         token->length = 2;
@@ -68,11 +69,8 @@ static void lex_operator(token_t* token)
                         token->kind = TK_PLUS;
                 }
 
-                pos += token->length;
-                return;
-        }
-
-        if (*pos == '-') {
+		break;
+	case '-':
                 if (pos[1] == '>') {
                         token->kind = TK_ARROW;
                         token->length = 2;
@@ -87,60 +85,18 @@ static void lex_operator(token_t* token)
                         token->kind = TK_MINUS;
                 }
 
-                pos += token->length;
-                return;
-        }
-
-        if (*pos == '~') {
+		break;
+	case '~':
                 token->kind = TK_TILDE;
+		break;
+	default:
+		token->kind = char_info[*pos] >> CHAR_OPER_SHIFT;
+        	if (pos[1] == '=') {
+                	token->flags |= TF_EQUALS;
+                	token->length =  2;
+        	}
 
-                pos += token->length;
-                return;
-        }
-
-        /* TODO: Use char_info to convert chars to types directly */
-        /* These cases can be converted to assignments if followed by a '=' */
-        switch(*pos) {
-        case '*':
-                token->kind = TK_STAR;
-                break;
-        case '/':
-                token->kind = TK_SLASH;
-                break;
-        case '%':
-                token->kind = TK_PERCENT;
-                break;
-        case '=':
-                token->kind = TK_EQUALS;
-                break;
-        case '!':
-                token->kind = TK_NOT;
-                break;
-        case '<':
-                token->kind = TK_LESS_THAN;
-                break;
-        case '>':
-                token->kind = TK_GREATER_THAN;
-                break;
-        case '^':
-                token->kind = TK_CARET;
-                break;
-        case '&':
-                token->kind = TK_AMPERSAND;
-                break;
-        case '|':
-                token->kind = TK_PIPE;
-                break;
-        default:
-                error(token, "bug: unrecognized operator\n");
-
-                pos += token->length;
-                return;
-        }
-
-        if (pos[1] == '=') {
-                token->flags |= TF_EQUALS;
-                token->length =  2;
+		break;
         }
 
         pos += token->length;

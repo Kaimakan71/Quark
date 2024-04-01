@@ -3,6 +3,7 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
+#include <debug.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +30,8 @@ static char* load_text_file(char* filename)
         FILE* file;
         long size;
         char* buf;
+
+	DEBUG("Loading %s...\n", filename);
 
         file = fopen(filename, "rb");
         if (file == NULL) {
@@ -57,9 +60,11 @@ static char* load_text_file(char* filename)
         return buf;
 }
 
-void parse_args(int argc, char* argv[])
+static bool parse_args(int argc, char* argv[])
 {
         bool found;
+
+	DEBUG("Parsing arguments...\n");
 
         for (int i = 1; i < argc; i++) {
                 found = false;
@@ -69,26 +74,28 @@ void parse_args(int argc, char* argv[])
                                 continue;
                         }
 
-                        found = true;
-
                         if (argc < i + 1) {
-                                fprintf(stderr, "expected %s after %s\n", params[j].description, params[j].name);
-                                return;
+                                fprintf(stderr, "Expected %s after %s\n", params[j].description, params[j].name);
+                                return false;
                         }
 
                         if (*params[j].value != NULL) {
-                                fprintf(stderr, "%s cannot be used more than once\n", params[j].name);
-                                return;
+                                fprintf(stderr, "Cannot use argument %s more than once\n", params[j].name);
+                                return false;
                         }
 
+			found = true;
                         *params[j].value = argv[++i];
+			break;
                 }
 
                 if (!found) {
                         fprintf(stderr, "Invalid argument \"%s\"\n", argv[i]);
-                        return;
+                        return false;
                 }
         }
+
+	return true;
 }
 
 int main(int argc, char* argv[])
@@ -98,16 +105,19 @@ int main(int argc, char* argv[])
         ast_node_t* root;
         ast_node_t* strings;
 
-        parse_args(argc, argv);
+        if (!parse_args(argc, argv)) {
+		return -1;
+	}
 
         if (input_filename == NULL || output_filename == NULL) {
                 fprintf(stderr, "Both an input and output filename must be set\n");
-                return 1;
+                return -1;
         }
 
         output_file = fopen(output_filename, "w");
         if (output_file == NULL) {
                 perror(output_filename);
+		return -1;
         }
 
         input = load_text_file(input_filename);
@@ -116,10 +126,7 @@ int main(int argc, char* argv[])
                 return -1;
         }
 
-        printf("Parsing...\n");
         root = parse(input, &strings);
-
-        printf("Generating assembly...\n");
         codegen(root, strings, output_file);
 
         free(input);

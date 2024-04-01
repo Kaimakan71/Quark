@@ -9,14 +9,6 @@
 #include <name.h>
 #include <parser/ast.h>
 
-static const char* node_kind_strings[] = {
-        [NK_BUILTIN_TYPE] = "built-in type",
-        [NK_PROCEDURE] = "procedure",
-        [NK_PARAMETER] = "parameter",
-        [NK_CALL] = "call",
-        [NK_NUMBER] = "number"
-};
-
 ast_node_t* create_node(ast_node_t* parent)
 {
         ast_node_t* node;
@@ -98,12 +90,10 @@ ast_node_t* find_node_of_kind(token_t* name, ast_node_t* parent, node_kind_t kin
 
 	node = find_node(name, parent);
 	if (node == NULL) {
-                error(name, "\"%.*s\" was not found in any accessible scope\n", name->length, name->pos);
                 return NULL;
 	}
 
 	if (node->kind != kind) {
-		error(name, "%.*s is not a %s\n", name->length, name->pos, node_kind_strings[kind]);
 		return NULL;
 	}
 

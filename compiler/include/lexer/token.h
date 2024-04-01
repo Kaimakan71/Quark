@@ -40,7 +40,7 @@ typedef enum {
         TK_SLASH,
         TK_PERCENT,
         TK_EQUALS,
-        TK_NOT,
+        TK_EXCLAMATION,
         TK_LESS_THAN,
         TK_GREATER_THAN,
         TK_CARET,

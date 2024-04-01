@@ -14,34 +14,38 @@ typedef enum {
         NK_BUILTIN_TYPE,
         NK_PROCEDURE,
         NK_PARAMETER,
+	NK_VARIABLE,
         NK_CALL,
 	NK_NUMBER,
+	NK_ASSIGNMENT,
         NK_STRING,
         NK_STRING_REFERENCE
 } node_kind_t;
 
 #define NF_NONE 0
 #define NF_NAMED (1 << 0)
-#define NF_CHARACTER (1 << 1)
-#define NF_DEFINITION (1 << 2)
+#define NF_DEFINITION (1 << 1)
 
 typedef struct ast_node {
         node_kind_t kind;
         uint8_t flags;
         name_t name;
 
-        /* Builtin type */
-        size_t bits;
+	union {
+		size_t size; /* Builtin type */
+		size_t local_offset; /* Local variable */
+		struct ast_node* callee; /* Call */
+		uint64_t value; /* Number */
+		struct ast_node* destination; /* Assignment */
+	};
 
-        /* Parameter */
+	/* Procedure */
+	size_t local_size;
+	struct ast_node* return_type;
+
+        /* Parameter / variable */
         struct ast_node* type;
         size_t pointer_depth;
-
-        /* Procedure call */
-        struct ast_node* callee;
-
-	/* Number */
-	uint64_t value;
 
         /* String */
         unsigned int string_id;

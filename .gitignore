@@ -1,8 +1,9 @@
 # Git-ignored paths.
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
+compiler/quarkc
 .vscode/
 .vs/
-quarkc
 *.o
+*.elf
 *.exe

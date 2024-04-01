@@ -3,6 +3,7 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
+#include <debug.h>
 #include <codegen/codegen.h>
 
 static FILE* out;
@@ -37,17 +38,31 @@ static void generate_call(ast_node_t* call)
         fprintf(out, "  call %.*s\n", call->callee->name.length, call->callee->name.string);
 }
 
+static void generate_assignment(ast_node_t* assignment)
+{
+	generate_call(assignment->children.head);
+
+	fprintf(out, "  mov [rsp+%lu], rax\n", assignment->destination->local_offset);
+}
+
 static void generate_procedure(ast_node_t* procedure)
 {
         ast_node_t* node;
 
-        fprintf(out, "\nglobal %.*s\n%.*s:\n  push rbp\n  mov rbp, rsp\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
+        fprintf(out, "\nglobal %.*s\n%.*s:\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
+	if (procedure->local_size > 0) {
+		fprintf(out, "  push rbp\n  mov rbp, rsp\n  sub rsp, %lu\n", procedure->local_size);
+	}
 
         node = procedure->children.head;
         while (node != NULL) {
                 if (node->kind == NK_CALL) {
                         generate_call(node);
                 }
+
+		if (node->kind == NK_ASSIGNMENT) {
+			generate_assignment(node);
+		}
 
                 if (node->next != NULL) {
                         node = node->next;
@@ -57,12 +72,17 @@ static void generate_procedure(ast_node_t* procedure)
                 break;
         }
 
-        fprintf(out, "  leave\n  ret\n");
+	if (procedure->local_size > 0) {
+		fprintf(out, "  leave\n");
+	}
+        fprintf(out, "  ret\n");
 }
 
 void codegen(ast_node_t* root, ast_node_t* strings, FILE* _out)
 {
         ast_node_t* node;
+	
+	DEBUG("Generating assembly...\n");
 
         out = _out;
 

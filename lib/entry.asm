@@ -2,11 +2,17 @@
 ; Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 ; Provided under the BSD 3-Clause license.
 
-global _start
 extern main
 extern exit
+
+section .text
+
+global _start
 _start:
+	mov rdi, [rsp]
+	mov rsi, rsp
+	add rsi, 8
 	call main
 
 	mov rdi, rax
-	call exit
+	jmp exit

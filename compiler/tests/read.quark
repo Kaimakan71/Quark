@@ -1,0 +1,13 @@
+proc open(char* filename, uint flags, uint mode) -> uint;
+proc close(uint fd) -> uint;
+
+proc main() {
+	uint fd;
+
+	fd = open("test.txt", 0, 0);
+	if (!fd) {
+		exit(1);
+	}
+
+	close(fd);
+}

@@ -8,6 +8,6 @@
 
 #include <parser/ast.h>
 
-ast_node_t* parse(char* source, ast_node_t** strings);
+ast_node_t* parse(char* source, ast_node_t** strings_out);
 
 #endif /* _PARSER_H */
