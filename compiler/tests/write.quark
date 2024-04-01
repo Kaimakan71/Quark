@@ -1,5 +1,5 @@
 proc write(uint fd, char* buf, uint count) -> uint;
 
 proc main() {
-	write(1, "Hello, wold!", 12);
+	write(1, "Hello from Quark!", 17);
 }

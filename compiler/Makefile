@@ -6,12 +6,21 @@ OFILES = error.o hash.o lexer/char_info.o lexer/keyword.o lexer/lexer.o parser/a
 CFLAGS = -I include
 LDFLAGS =
 
-TEST_OFILES = tests/exit.o tests/write.o
-LIB_OFILES = ../lib/entry.o ../lib/system.o ../lib/string.o
-
 CC ?= cc
 LD ?= ld
 NASM ?= nasm
+
+TESTS_TARGET = linux
+TESTS_OFILES = tests/exit.o tests/write.o
+LIB_OFILES = ../lib/$(TESTS_TARGET)/entry.o ../lib/$(TESTS_TARGET)/system.o ../lib/string.o
+
+ifeq ($(TESTS_TARGET),hyra)
+TESTS_LD = ../../Hyra/cross/bin/x86_64-hyra-gcc
+TESTS_LDFLAGS = -pie -nostdlib
+else
+TESTS_LD = $(LD)
+TESTS_LDFLAGS = -static -nostdlib
+endif
 
 .PHONY: all test clean
 
@@ -29,11 +38,11 @@ test: tests/exit.elf tests/write.elf tests/assignment.elf
 
 %.elf: %.o
 	@echo Linking $@...
-	@$(LD) $(LIB_OFILES) $< -o $@
+	@$(TESTS_LD) $(TESTS_LDFLAGS) $(LIB_OFILES) $< -o $@
 
 %.o: %.asm
 	@echo Assembling $<
-	@$(NASM) -g $< -f elf64 -o $@
+	@$(NASM) $< -f elf64 -o $@
 
 %.asm: %.quark
 	@echo Compiling $<...
