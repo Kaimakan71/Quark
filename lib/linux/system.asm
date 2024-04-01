@@ -4,12 +4,6 @@
 
 section .text
 
-global exit
-exit:
-	mov rax, 0x3c
-	syscall
-	hlt
-
 global read
 read:
 	xor rax, rax
@@ -21,3 +15,21 @@ write:
 	mov rax, 0x01
 	syscall
 	ret
+
+global open
+open:
+	mov rax, 0x02
+	syscall
+	ret
+
+global close
+close:
+	mov rax, 0x03
+	syscall
+	ret
+
+global exit
+exit:
+	mov rax, 0x3c
+	syscall
+	hlt

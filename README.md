@@ -7,8 +7,9 @@ Run `make clean` to delete all binaries, except for `quarkc` (the compiler).
 Run `make test` to run compiler tests (which are in the `test` directory).
 
 # TODO
+- [x] Variables as arguments (e.g. `write(0, "hi", length);`)
+- [ ] Refactor string (initialized data) system
 - [ ] Escape sequences in characters and strings (e.g. `"Hello\n"`)
-- [ ] Variables as arguments (e.g. `write(0, "hi", length);`)
 - [ ] Initialized local variables (e.g. `uint x = 0;`)
 - [ ] More kinds of assignment values (e.g. strings and numbers)
 - [ ] Global variables/constants (e.g. `const uint8 debugLevel = 0x03;`)

@@ -25,6 +25,8 @@ static void generate_call(ast_node_t* call)
                         fprintf(out, "%lu\n", argument->value);
                 } else if (argument->kind == NK_STRING_REFERENCE) {
                         fprintf(out, "__string%u\n", argument->string->string_id);
+                } else if (argument->kind == NK_VARIABLE_REFERENCE) {
+                        fprintf(out, "[rsp+%lu]\n", argument->variable->local_offset);
                 }
 
                 if (argument->next != NULL) {

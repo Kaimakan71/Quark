@@ -18,6 +18,8 @@ typedef enum {
         NK_CALL,
         NK_NUMBER,
         NK_ASSIGNMENT,
+        NK_VARIABLE_REFERENCE,
+
         NK_STRING,
         NK_STRING_REFERENCE
 } node_kind_t;
@@ -37,6 +39,7 @@ typedef struct ast_node {
                 struct ast_node* callee; /* Call */
                 uint64_t value; /* Number */
                 struct ast_node* destination; /* Assignment */
+                struct ast_node* variable; /* Variable reference */
         };
 
         /* Procedure */

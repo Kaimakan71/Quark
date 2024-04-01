@@ -84,24 +84,30 @@ static void parse_arguments(token_t* token, ast_node_t* call)
 
                 argument = create_node(call);
 
-                if (token->kind == TK_NUMBER) {
+                if (token->kind == TK_IDENTIFIER) {
+                        argument->kind = NK_VARIABLE_REFERENCE;
+
+                        argument->variable = find_node_of_kind(token, call->parent, NK_VARIABLE);
+                        if (argument->variable == NULL) {
+                                error(token, "\"%.*s\" has not been declared or is not a variable\n", token->length, token->pos);
+                                delete_node(argument);
+                                return;
+                        }
+                } else if (token->kind == TK_NUMBER) {
                         argument->kind = NK_NUMBER;
                         argument->value = token->value;
                 } else if (token->kind == TK_STRING) {
                         ast_node_t* string;
 
-                        string = create_node(strings);
-                        string->kind = NK_STRING;
-                        string->string_id = next_string_id++;
-                        string->string_length = token->length - 1;
-                        string->string_data = token->pos + 1;
-                        push_node(string);
-
                         argument->kind = NK_STRING_REFERENCE;
-                        argument->string = string;
+                        argument->string = create_node(strings);
+                        argument->string->kind = NK_STRING;
+                        argument->string->string_id = next_string_id++;
+                        argument->string->string_length = token->length - 1;
+                        argument->string->string_data = token->pos + 1;
+                        push_node(argument->string);
                 } else {
-                        DEBUG("TODO: Allow variables to be used as arguments\n");
-                        error(token, "Expected value or \")\"\n");
+                        error(token, "Expected argument value or \")\"\n");
                         delete_node(argument);
                         return;
                 }
