@@ -20,12 +20,11 @@ void error(token_t* token, char* fmt, ...)
 
 void warn(token_t* token, char* fmt, ...)
 {
-	va_list ap;
+        va_list ap;
 
-	printf("%d:%d: \033[93mwarning\033[0m: ", token->line, token->column);
+        printf("%d:%d: \033[93mwarning\033[0m: ", token->line, token->column);
 
-	va_start(ap, fmt);
-	vprintf(fmt, ap);
-	va_end(ap);
+        va_start(ap, fmt);
+        vprintf(fmt, ap);
+        va_end(ap);
 }
-

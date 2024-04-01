@@ -16,4 +16,3 @@ strlen:
 .exit:
 	sub rax, rdi
 	ret
-

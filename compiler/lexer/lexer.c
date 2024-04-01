@@ -56,8 +56,8 @@ static void lex_operator(token_t* token)
 {
         token->length = 1;
 
-	switch (*pos) {
-	case '+':
+        switch (*pos) {
+        case '+':
                 if (pos[1] == '+') {
                         token->kind = TK_INCREMENT;
                         token->length = 2;
@@ -69,8 +69,8 @@ static void lex_operator(token_t* token)
                         token->kind = TK_PLUS;
                 }
 
-		break;
-	case '-':
+                break;
+        case '-':
                 if (pos[1] == '>') {
                         token->kind = TK_ARROW;
                         token->length = 2;
@@ -85,18 +85,18 @@ static void lex_operator(token_t* token)
                         token->kind = TK_MINUS;
                 }
 
-		break;
-	case '~':
+                break;
+        case '~':
                 token->kind = TK_TILDE;
-		break;
-	default:
-		token->kind = char_info[*pos] >> CHAR_OPER_SHIFT;
-        	if (pos[1] == '=') {
-                	token->flags |= TF_EQUALS;
-                	token->length =  2;
-        	}
+                break;
+        default:
+                token->kind = char_info[*pos] >> CHAR_OPER_SHIFT;
+                if (pos[1] == '=') {
+                        token->flags |= TF_EQUALS;
+                        token->length =  2;
+                }
 
-		break;
+                break;
         }
 
         pos += token->length;

@@ -12,4 +12,3 @@
 void init_types(ast_node_t* root);
 
 #endif /* _TYPES_H */
-

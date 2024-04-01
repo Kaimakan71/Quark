@@ -28,9 +28,8 @@ static void create_builtin_type(ast_node_t* root, char* name, size_t size, uint8
 void init_types(ast_node_t* root)
 {
 
-	DEBUG("Initializing types...\n");
+        DEBUG("Initializing types...\n");
 
-	create_builtin_type(root, "uint", 8, NF_NONE);
-	create_builtin_type(root, "char", 1, NF_NONE);
+        create_builtin_type(root, "uint", 8, NF_NONE);
+        create_builtin_type(root, "char", 1, NF_NONE);
 }
-

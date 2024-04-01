@@ -40,9 +40,9 @@ static void generate_call(ast_node_t* call)
 
 static void generate_assignment(ast_node_t* assignment)
 {
-	generate_call(assignment->children.head);
+        generate_call(assignment->children.head);
 
-	fprintf(out, "  mov [rsp+%lu], rax\n", assignment->destination->local_offset);
+        fprintf(out, "  mov [rsp+%lu], rax\n", assignment->destination->local_offset);
 }
 
 static void generate_procedure(ast_node_t* procedure)
@@ -50,9 +50,9 @@ static void generate_procedure(ast_node_t* procedure)
         ast_node_t* node;
 
         fprintf(out, "\nglobal %.*s\n%.*s:\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
-	if (procedure->local_size > 0) {
-		fprintf(out, "  push rbp\n  mov rbp, rsp\n  sub rsp, %lu\n", procedure->local_size);
-	}
+        if (procedure->local_size > 0) {
+                fprintf(out, "  push rbp\n  mov rbp, rsp\n  sub rsp, %lu\n", procedure->local_size);
+        }
 
         node = procedure->children.head;
         while (node != NULL) {
@@ -60,9 +60,9 @@ static void generate_procedure(ast_node_t* procedure)
                         generate_call(node);
                 }
 
-		if (node->kind == NK_ASSIGNMENT) {
-			generate_assignment(node);
-		}
+                if (node->kind == NK_ASSIGNMENT) {
+                        generate_assignment(node);
+                }
 
                 if (node->next != NULL) {
                         node = node->next;
@@ -72,17 +72,17 @@ static void generate_procedure(ast_node_t* procedure)
                 break;
         }
 
-	if (procedure->local_size > 0) {
-		fprintf(out, "  leave\n");
-	}
+        if (procedure->local_size > 0) {
+                fprintf(out, "  leave\n");
+        }
         fprintf(out, "  ret\n");
 }
 
 void codegen(ast_node_t* root, ast_node_t* strings, FILE* _out)
 {
         ast_node_t* node;
-	
-	DEBUG("Generating assembly...\n");
+        
+        DEBUG("Generating assembly...\n");
 
         out = _out;
 

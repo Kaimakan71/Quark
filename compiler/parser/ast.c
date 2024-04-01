@@ -86,16 +86,16 @@ ast_node_t* find_node(token_t* name, ast_node_t* parent)
 
 ast_node_t* find_node_of_kind(token_t* name, ast_node_t* parent, node_kind_t kind)
 {
-	ast_node_t* node;
+        ast_node_t* node;
 
-	node = find_node(name, parent);
-	if (node == NULL) {
+        node = find_node(name, parent);
+        if (node == NULL) {
                 return NULL;
-	}
+        }
 
-	if (node->kind != kind) {
-		return NULL;
-	}
+        if (node->kind != kind) {
+                return NULL;
+        }
 
         return node;
 }

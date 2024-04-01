@@ -31,7 +31,7 @@ static char* load_text_file(char* filename)
         long size;
         char* buf;
 
-	DEBUG("Loading %s...\n", filename);
+        DEBUG("Loading %s...\n", filename);
 
         file = fopen(filename, "rb");
         if (file == NULL) {
@@ -64,7 +64,7 @@ static bool parse_args(int argc, char* argv[])
 {
         bool found;
 
-	DEBUG("Parsing arguments...\n");
+        DEBUG("Parsing arguments...\n");
 
         for (int i = 1; i < argc; i++) {
                 found = false;
@@ -84,9 +84,9 @@ static bool parse_args(int argc, char* argv[])
                                 return false;
                         }
 
-			found = true;
+                        found = true;
                         *params[j].value = argv[++i];
-			break;
+                        break;
                 }
 
                 if (!found) {
@@ -95,7 +95,7 @@ static bool parse_args(int argc, char* argv[])
                 }
         }
 
-	return true;
+        return true;
 }
 
 int main(int argc, char* argv[])
@@ -106,8 +106,8 @@ int main(int argc, char* argv[])
         ast_node_t* strings;
 
         if (!parse_args(argc, argv)) {
-		return -1;
-	}
+                return -1;
+        }
 
         if (input_filename == NULL || output_filename == NULL) {
                 fprintf(stderr, "Both an input and output filename must be set\n");
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
         output_file = fopen(output_filename, "w");
         if (output_file == NULL) {
                 perror(output_filename);
-		return -1;
+                return -1;
         }
 
         input = load_text_file(input_filename);
