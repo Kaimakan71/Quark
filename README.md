@@ -12,7 +12,8 @@ Run `make test` to run compiler tests (which are in the `test` directory).
 # TODO
 - [x] Variables as arguments (e.g. `write(0, "hi", length);`)
 - [x] Initialized local variables (e.g. `uint x = strlen("Test!");`)
-- [ ] More kinds of assignment values (e.g. strings and numbers)
+- [x] More kinds of assignment values (e.g. strings and numbers)
+- [ ] Return statements
 - [ ] Refactor string (initialized data) system
 - [ ] Escape sequences in characters and strings (e.g. `"Hello\n"`)
 - [ ] Global variables/constants (e.g. `const uint8 debugLevel = 0x03;`)

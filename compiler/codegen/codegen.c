@@ -24,11 +24,11 @@ static void generate_call(ast_node_t* call)
                 }
 
                 if (argument->kind == NK_NUMBER) {
-                        fprintf(out, "%lu\n", argument->value);
+                        fprintf(out, "0x%lx\n", argument->value);
                 } else if (argument->kind == NK_STRING_REFERENCE) {
                         fprintf(out, "__string%u\n", argument->string->string_id);
                 } else if (argument->kind == NK_VARIABLE_REFERENCE) {
-                        fprintf(out, "[rsp+%lu]\n", argument->variable->local_offset);
+                        fprintf(out, "[rsp+0x%lx]\n", argument->variable->local_offset);
                 }
 
                 if (argument->next != NULL) {
@@ -44,11 +44,21 @@ static void generate_call(ast_node_t* call)
 
 static void generate_assignment(ast_node_t* assignment)
 {
+        ast_node_t* node;
+
         DEBUG("Generating assignment to \"%.*s\"...\n", assignment->destination->name.length, assignment->destination->name.string);
 
-        generate_call(assignment->children.head);
+        node = assignment->children.head;
+        if (node->kind == NK_CALL) {
+                DEBUG("Call assignment\n");
 
-        fprintf(out, "  mov [rsp+%lu], rax\n", assignment->destination->local_offset);
+                generate_call(assignment->children.head);
+                fprintf(out, "  mov [rsp+0x%lx], rax\n", assignment->destination->local_offset);
+        } else if (node->kind == NK_NUMBER) {
+                DEBUG("Numeric assignment\n");
+
+                fprintf(out, "  mov qword [rsp+0x%lx], 0x%lx\n", assignment->destination->local_offset, node->value);
+        }
 }
 
 static void generate_procedure(ast_node_t* procedure)
@@ -59,7 +69,7 @@ static void generate_procedure(ast_node_t* procedure)
 
         fprintf(out, "\nglobal %.*s\n%.*s:\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
         if (procedure->local_size > 0) {
-                fprintf(out, "  push rbp\n  mov rbp, rsp\n  sub rsp, %lu\n", procedure->local_size);
+                fprintf(out, "  push rbp\n  mov rbp, rsp\n  sub rsp, 0x%lx\n", procedure->local_size);
         }
 
         node = procedure->children.head;

@@ -166,6 +166,15 @@ static void parse_assignment_value(token_t* token, ast_node_t* assignment)
                 }
 
                 parse_call(token, assignment, callee);
+        } else if (token->kind == TK_NUMBER) {
+                ast_node_t* number;
+
+                number = create_node(assignment);
+                number->kind = NK_NUMBER;
+                number->value = token->value;
+
+                push_node(number);
+                lexer_next(token);
         } else {
                 error(token, "\"=\" must be followed by a value\n");
                 return;

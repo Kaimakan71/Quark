@@ -2,6 +2,7 @@ proc open(char* filename, uint flags, uint mode) -> uint;
 proc close(uint fd) -> uint;
 
 proc main() {
+	uint test = 69420;
 	uint fd = open("balls.txt", 0, 0);
 	close(fd);
 }
