@@ -150,15 +150,26 @@ static void parse_call(token_t* token, ast_node_t* caller, ast_node_t* callee)
                 return;
         }
 
-        lexer_next(token);
-        if (token->kind != TK_SEMICOLON) {
-                error(token, "Call must be terminated with a \";\"\n");
-                delete_node(call);
-                return;
-        }
-
         push_node(call);
         lexer_next(token);
+}
+
+static void parse_assignment_value(token_t* token, ast_node_t* assignment)
+{
+        if (token->kind == TK_IDENTIFIER) {
+                ast_node_t* callee;
+
+                callee = find_node_of_kind(token, root, NK_PROCEDURE);
+                if (callee == NULL) {
+                        error(token, "\"%.*s\" has not been declared or is not a procedure\n", token->length, token->pos);
+                        return;
+                }
+
+                parse_call(token, assignment, callee);
+        } else {
+                error(token, "\"=\" must be followed by a value\n");
+                return;
+        }
 }
 
 static void parse_local_declaration(token_t* token, ast_node_t* procedure, ast_node_t* scope, ast_node_t* type)
@@ -175,17 +186,31 @@ static void parse_local_declaration(token_t* token, ast_node_t* procedure, ast_n
         lexer_next(token);
         if (token->kind != TK_IDENTIFIER) {
                 error(token, "Expected variable name\n");
+                delete_node(variable);
                 return;
         }
         variable->name.string = token->pos;
         variable->name.length = token->length;
         variable->name.hash = token->hash;
 
-        /* TODO: Allow initialized local variables */
-
+        /* Generate an assignment if the variable is initialized */
         lexer_next(token);
+        if (token->kind == TK_EQUALS && !(token->flags & TF_EQUALS)) {
+                ast_node_t* assignment;
+
+                assignment = create_node(scope);
+                assignment->kind = NK_ASSIGNMENT;
+                assignment->destination = variable;
+
+                lexer_next(token);
+                parse_assignment_value(token, assignment);
+
+                push_node(assignment);
+        }
+
         if (token->kind != TK_SEMICOLON) {
-                error(token, "Variable name must be followed by a \";\"\n");
+                error(token, "Variable declaration must be terminated with a \";\"\n");
+                delete_node(variable);
                 return;
         }
 
@@ -214,22 +239,17 @@ static void parse_assignment(token_t* token, ast_node_t* scope, ast_node_t* vari
                 return;
         }
 
-        /* TODO: Allow more kinds of assignment values */
-
         lexer_next(token);
-        if (token->kind != TK_IDENTIFIER) {
-                error(token, "\"=\" must be followed by a procedure name\n");
+        parse_assignment_value(token, assignment);
+
+        if (token->kind != TK_SEMICOLON) {
+                error(token, "Assignment must be terminated with a \";\"\n");
+                delete_node(assignment);
                 return;
         }
 
-        callee = find_node_of_kind(token, root, NK_PROCEDURE);
-        if (callee == NULL) {
-                error(token, "\"%.*s\" has not been declared or is not a procedure\n", token->length, token->pos);
-                return;
-        }
-
-        parse_call(token, assignment, callee);
         push_node(assignment);
+        lexer_next(token);
 }
 
 static void parse_procedure_body(token_t* token, ast_node_t* procedure)
@@ -250,6 +270,12 @@ static void parse_procedure_body(token_t* token, ast_node_t* procedure)
 
                 if (node->kind == NK_PROCEDURE) {
                         parse_call(token, procedure, node);
+                        if (token->kind != TK_SEMICOLON) {
+                                error(token, "Call must be terminated with a \";\"\n");
+                                return;
+                        }
+
+                        lexer_next(token);
                 } else if (node->kind == NK_BUILTIN_TYPE) {
                         parse_local_declaration(token, procedure, procedure, node);
                 } else if (node->kind == NK_VARIABLE) {

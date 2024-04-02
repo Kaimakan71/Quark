@@ -13,6 +13,8 @@ static void generate_call(ast_node_t* call)
 {
         ast_node_t* argument;
 
+        DEBUG("Generating call to \"%.*s\"...\n", call->callee->name.length, call->callee->name.string);
+
         argument = call->children.head;
         for (int n = 0; argument != NULL; n++) {
                 if (n < (sizeof(arg_regs) / sizeof(arg_regs[0]))) {
@@ -42,6 +44,8 @@ static void generate_call(ast_node_t* call)
 
 static void generate_assignment(ast_node_t* assignment)
 {
+        DEBUG("Generating assignment to \"%.*s\"...\n", assignment->destination->name.length, assignment->destination->name.string);
+
         generate_call(assignment->children.head);
 
         fprintf(out, "  mov [rsp+%lu], rax\n", assignment->destination->local_offset);
@@ -50,6 +54,8 @@ static void generate_assignment(ast_node_t* assignment)
 static void generate_procedure(ast_node_t* procedure)
 {
         ast_node_t* node;
+
+        DEBUG("Generating procedure \"%.*s\"...\n", procedure->name.length, procedure->name.string);
 
         fprintf(out, "\nglobal %.*s\n%.*s:\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
         if (procedure->local_size > 0) {

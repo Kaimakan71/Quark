@@ -1,7 +1,0 @@
-proc strlen(char* string) -> uint;
-
-proc main() {
-	uint length;
-
-	length = strlen("Test!");
-}

@@ -6,10 +6,13 @@ Run `make`. Parallel builds can be run with `make -j<number of threads>`.
 Run `make clean` to delete all binaries, except for `quarkc` (the compiler).
 Run `make test` to run compiler tests (which are in the `test` directory).
 
+# Usage
+`./compiler/quarkc -i <input file> -o <output file>`. This will generate assembly code from the quark source code. If you want to assemble the program, you can use NASM `nasm <asm file> -f elf64 -o <output file>`.
+
 # TODO
 - [x] Variables as arguments (e.g. `write(0, "hi", length);`)
+- [x] Initialized local variables (e.g. `uint x = strlen("Test!");`)
+- [ ] More kinds of assignment values (e.g. strings and numbers)
 - [ ] Refactor string (initialized data) system
 - [ ] Escape sequences in characters and strings (e.g. `"Hello\n"`)
-- [ ] Initialized local variables (e.g. `uint x = 0;`)
-- [ ] More kinds of assignment values (e.g. strings and numbers)
 - [ ] Global variables/constants (e.g. `const uint8 debugLevel = 0x03;`)
