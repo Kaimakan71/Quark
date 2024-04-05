@@ -49,7 +49,8 @@ typedef enum {
         TK_TILDE,
 
         /* Keywords */
-        TK_PROC
+        TK_PROC,
+        TK_RETURN
 } token_kind_t;
 
 #define TF_NONE 0
