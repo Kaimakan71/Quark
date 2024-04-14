@@ -3,7 +3,6 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
-#include <debug.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,8 +29,6 @@ static char* load_text_file(char* filename)
         FILE* file;
         long size;
         char* buf;
-
-        DEBUG("Loading %s...\n", filename);
 
         file = fopen(filename, "rb");
         if (file == NULL) {
@@ -63,8 +60,6 @@ static char* load_text_file(char* filename)
 static bool parse_args(int argc, char* argv[])
 {
         bool found;
-
-        DEBUG("Parsing arguments...\n");
 
         for (int i = 1; i < argc; i++) {
                 found = false;

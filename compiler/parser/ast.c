@@ -23,45 +23,45 @@ ast_node_t* create_node(ast_node_t* parent)
         return node;
 }
 
-void push_node(ast_node_t* node)
+void push_node(ast_node_t* node, ast_node_list_t* list)
 {
         /* Add the node to the doubly linked list */
-        if (node->parent->children.head == NULL) {
+        if (list->head == NULL) {
                 node->prev = NULL;
-                node->parent->children.head = node;
+                list->head = node;
         } else {
-                node->prev = node->parent->children.tail;
-                node->parent->children.tail->next = node;
+                node->prev = list->tail;
+                list->tail->next = node;
         }
 
-        node->parent->children.tail = node;
+        list->tail = node;
 }
 
-void delete_node(ast_node_t* top_node)
+void delete_nodes(ast_node_t* top_node)
 {
-        ast_node_t* current;
+        ast_node_t* node;
         ast_node_t* next;
 
-        current = top_node;
-        while (current != NULL) {
-                if (current->children.head != NULL) {
-                        next = current->children.head;
-                        free(current);
-                        current = next;
+        node = top_node;
+        while (node != NULL) {
+                if (node->children.head != NULL) {
+                        next = node->children.head;
+                        free(node);
+                        node = next;
                         continue;
                 }
 
-                if (current->next != NULL) {
-                        next = current->next;
-                        free(current);
-                        current = next;
+                if (node->next != NULL) {
+                        next = node->next;
+                        free(node);
+                        node = next;
                         continue;
                 }
 
-                if (current->parent != top_node && current->parent->next != NULL) {
-                        next = current->parent->next;
-                        free(current);
-                        current = next;
+                if (node->parent != top_node && node->parent->next != NULL) {
+                        next = node->parent->next;
+                        free(node);
+                        node = next;
                         continue;
                 }
 
@@ -82,20 +82,4 @@ ast_node_t* find_node(token_t* name, ast_node_t* parent)
 
         /* Node not found */
         return NULL;
-}
-
-ast_node_t* find_node_of_kind(token_t* name, ast_node_t* parent, node_kind_t kind)
-{
-        ast_node_t* node;
-
-        node = find_node(name, parent);
-        if (node == NULL) {
-                return NULL;
-        }
-
-        if (node->kind != kind) {
-                return NULL;
-        }
-
-        return node;
 }

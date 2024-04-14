@@ -3,61 +3,105 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
-#include <debug.h>
+#include <stdlib.h>
+#include <string.h>
 #include <codegen/codegen.h>
 
 static FILE* out;
 static char* arg_regs[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 
+#define N_ARG_REGS (sizeof(arg_regs) / sizeof(arg_regs[0]))
+
+static void generate_call(ast_node_t* call);
+
+static void generate_value(char* destination, ast_node_t* value)
+{
+        if (value->kind == NK_CALL) {
+                generate_call(value);
+
+                if (strcmp(destination, "rax") != 0) {
+                        fprintf(out, "  mov %s, rax\n", destination);
+                }
+        } else if (value->kind == NK_VARIABLE_REFERENCE) {
+                fprintf(out, "  mov %s, [rsp+0x%lx]\n", destination, value->variable->local_offset);
+        } else if (value->kind == NK_NUMBER) {
+                fprintf(out, "  mov %s, 0x%lx\n", destination, value->value);
+        } else if (value->kind == NK_STRING_REFERENCE) {
+                fprintf(out, "  lea rax, [rel __string%u]\n", value->string->id);
+
+                if (strcmp(destination, "rax") != 0) {
+                        fprintf(out, "  mov %s, rax\n", destination);
+                }
+        }
+}
+
 static void generate_call(ast_node_t* call)
 {
         ast_node_t* argument;
+        int reg_index;
+        char* destination;
 
-        DEBUG("Generating call to \"%.*s\"...\n", call->callee->name.length, call->callee->name.string);
-
+        /* Perform calls first to avoid overwriting regs */
+        /* TODO: This does not *always* work */
         argument = call->children.head;
-        for (int n = 0; argument != NULL; n++) {
-                if (n < (sizeof(arg_regs) / sizeof(arg_regs[0]))) {
-                        fprintf(out, "  mov %s, ", arg_regs[n]);
-                } else {
-                        fprintf(out, "  pushq ");
-                }
-
-                if (argument->kind == NK_NUMBER) {
-                        fprintf(out, "0x%lx\n", argument->value);
-                } else if (argument->kind == NK_STRING_REFERENCE) {
-                        fprintf(out, "__string%u\n", argument->string->string_id);
-                } else if (argument->kind == NK_VARIABLE_REFERENCE) {
-                        fprintf(out, "[rsp+0x%lx]\n", argument->variable->local_offset);
-                }
-
-                if (argument->next != NULL) {
+        reg_index = 0;
+        while (argument != NULL) {
+                if (argument->kind != NK_CALL) {
                         argument = argument->next;
+                        reg_index++;
                         continue;
                 }
 
-                break;
+                generate_call(argument);
+                fprintf(out, "  mov %s, rax\n", arg_regs[reg_index]);
+
+                argument = argument->next;
+                reg_index++;
         }
+
+        argument = call->children.head;
+        reg_index = 0;
+        destination = malloc(sizeof(char) * 16);
+        while (argument != NULL) {
+                if (argument->kind == NK_CALL) {
+                        argument = argument->next;
+                        reg_index++;
+                        continue;
+                }
+
+                snprintf(destination, 16, "%s", arg_regs[reg_index]);
+                generate_value(destination, argument);
+
+                argument = argument->next;
+                reg_index++;
+        }
+        free(destination);
 
         fprintf(out, "  call %.*s\n", call->callee->name.length, call->callee->name.string);
 }
 
 static void generate_assignment(ast_node_t* assignment)
 {
-        ast_node_t* node;
+        char* destination;
 
-        DEBUG("Generating assignment to \"%.*s\"...\n", assignment->destination->name.length, assignment->destination->name.string);
+        destination = malloc(sizeof(char) * 16);
 
-        node = assignment->children.head;
-        if (node->kind == NK_CALL) {
-                DEBUG("Call assignment\n");
+        snprintf(destination, 16, "qword [rsp+0x%lx]", assignment->destination->local_offset);
+        generate_value(destination, assignment->children.head);
 
-                generate_call(assignment->children.head);
-                fprintf(out, "  mov [rsp+0x%lx], rax\n", assignment->destination->local_offset);
-        } else if (node->kind == NK_NUMBER) {
-                DEBUG("Numeric assignment\n");
+        free(destination);
+}
 
-                fprintf(out, "  mov qword [rsp+0x%lx], 0x%lx\n", assignment->destination->local_offset, node->value);
+static void generate_return(ast_node_t* ret, ast_node_t* procedure)
+{
+        if (ret->children.head != NULL) {
+                generate_value("rax", ret->children.head);
+        }
+
+        if (procedure->local_size > 0) {
+                fprintf(out, "  leave\n  ret\n");
+        } else {
+                fprintf(out, "  pop rbp\n  ret\n");
         }
 }
 
@@ -65,75 +109,79 @@ static void generate_procedure(ast_node_t* procedure)
 {
         ast_node_t* node;
 
-        DEBUG("Generating procedure \"%.*s\"...\n", procedure->name.length, procedure->name.string);
-
-        fprintf(out, "\nglobal %.*s\n%.*s:\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
+        fprintf(out, "global %.*s\n%.*s:\n  push rbp\n  mov rbp, rsp\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
         if (procedure->local_size > 0) {
-                fprintf(out, "  push rbp\n  mov rbp, rsp\n  sub rsp, 0x%lx\n", procedure->local_size);
+                fprintf(out, "  sub rsp, 0x%lx\n", procedure->local_size);
         }
 
         node = procedure->children.head;
         while (node != NULL) {
-                if (node->kind == NK_CALL) {
-                        generate_call(node);
-                }
+                if (node->kind == NK_RETURN) {
+                        generate_return(node, procedure);
 
-                if (node->kind == NK_ASSIGNMENT) {
+                        /* If a return statement always runs, nothing will happen after */
+                        return;
+                } else if (node->kind == NK_CALL) {
+                        generate_call(node);
+                } else if (node->kind == NK_ASSIGNMENT) {
                         generate_assignment(node);
                 }
-
-                if (node->next != NULL) {
-                        node = node->next;
-                        continue;
-                }
-
-                break;
-        }
-
-        if (procedure->local_size > 0) {
-                fprintf(out, "  leave\n");
-        }
-        fprintf(out, "  ret\n");
-}
-
-void codegen(ast_node_t* root, ast_node_t* strings, FILE* _out)
-{
-        ast_node_t* node;
-        
-        DEBUG("Generating assembly...\n");
-
-        out = _out;
-
-        /* Declare strings */
-        fprintf(out, "\nsection .data\n");
-        node = strings->children.head;
-        while (node != NULL) {
-                fprintf(out, "__string%u: db \"%.*s\", 0\n", node->string_id, node->string_length, node->string_data);
 
                 node = node->next;
         }
 
-        fprintf(out, "\nsection .text\n");
-        node = root->children.head;
-        while (node->parent != NULL) {
-                if (node->kind == NK_PROCEDURE) {
-                        if (node->flags & NF_DEFINITION) {
-                                generate_procedure(node);
-                        } else {
-                                fprintf(out, "extern %.*s\n", node->name.length, node->name.string);
-                        }
-                }
-
-                if (node->next != NULL) {
-                        node = node->next;
-                        continue;
-                }
-
-                if (node->parent->next != NULL) {
-                        node = node->parent->next;
-                        continue;
-                }
-
-                break;
+        if (procedure->local_size > 0) {
+                fprintf(out, "  leave\n  ret\n");
+        } else {
+                fprintf(out, "  pop rbp\n  ret\n");
         }
+}
+
+static void generate_procedures(ast_node_t* procedures)
+{
+        ast_node_t* procedure;
+
+        if (procedures->children.head == NULL) {
+                return;
+        }
+
+        fprintf(out, "section .text\n\n");
+        procedure = procedures->children.head;
+        while (procedure != NULL) {
+                if (procedure->children.head != NULL) {
+                        generate_procedure(procedure);
+                } else {
+                        fprintf(out, "extern %.*s\n\n", procedure->name.length, procedure->name.string);
+                }
+
+                procedure = procedure->next;
+        }
+}
+
+static void generate_strings(ast_node_t* strings)
+{
+        ast_node_t* string;
+
+        if (strings->children.head == NULL) {
+                return;
+        }
+
+        fprintf(out, "section .data\n\n");
+        string = strings->children.head;
+        while (string != NULL) {
+                fprintf(out, "__string%u: db \"%.*s\", 0\n", string->id, string->length, string->data);
+                string = string->next;
+        }
+
+        fprintf(out, "\n");
+}
+
+void codegen(ast_node_t* procedures, ast_node_t* strings, FILE* _out)
+{
+        ast_node_t* node;
+
+        out = _out;
+
+        generate_strings(strings);
+        generate_procedures(procedures);
 }

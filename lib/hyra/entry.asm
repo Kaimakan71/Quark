@@ -9,6 +9,8 @@ section .text
 
 global _start
 _start:
+	endbr64
+
 	call main
 
 	mov rdi, rax

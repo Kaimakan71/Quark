@@ -1,5 +1,10 @@
 proc write(uint fd, char* buf, uint count) -> uint;
+proc strlen(char* s) -> uint;
 
-proc main() {
-	write(1, "Hello from Quark!", 17);
+proc main() -> uint {
+	char* msg = "Hello from Quark!";
+
+	write(1, msg, strlen(msg));
+
+	return 0;
 }

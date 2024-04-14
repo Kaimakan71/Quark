@@ -6,24 +6,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <debug.h>
 #include <error.h>
 #include <hash.h>
 #include <lexer/lexer.h>
 #include <parser/type.h>
 #include <parser/parser.h>
 
-static ast_node_t* root;
+static ast_node_t* procedures;
 static ast_node_t* strings;
-static unsigned int next_string_id;
+static int next_string_id;
 
 static ast_node_t* parse_call(token_t* token, ast_node_t* parent, ast_node_t* callee);
 static ast_node_t* parse_variable_reference(token_t* token, ast_node_t* parent, ast_node_t* variable);
 
 static ast_node_t* parse_value(token_t* token, ast_node_t* parent)
 {
-        DEBUG("Parsing value...\n");
-
         if (token->kind == TK_IDENTIFIER) {
                 ast_node_t* node;
 
@@ -37,7 +34,7 @@ static ast_node_t* parse_value(token_t* token, ast_node_t* parent)
                 if (token->kind == TK_LPAREN) {
                         lexer_next(token);
                         return parse_call(token, parent, node);
-                } else if (node->kind == NK_VARIABLE) {
+                } else if (node->kind == NK_LOCAL_VARIABLE) {
                         return parse_variable_reference(token, parent, node);
                 } else {
                         error(token, "\"%.*s\" is not a variable\n", token->length, token->pos);
@@ -51,7 +48,7 @@ static ast_node_t* parse_value(token_t* token, ast_node_t* parent)
                 number = create_node(parent);
                 number->kind = NK_NUMBER;
                 number->value = token->value;
-                push_node(number);
+                push_node(number, &parent->children);
 
                 lexer_next(token);
                 return number;
@@ -63,15 +60,15 @@ static ast_node_t* parse_value(token_t* token, ast_node_t* parent)
 
                 string = create_node(strings);
                 string->kind = NK_STRING;
-                string->string_id = next_string_id++;
-                string->string_length = token->length - 1;
-                string->string_data = token->pos + 1;
-                push_node(string);
+                string->id = next_string_id++;
+                string->length = token->length - 1;
+                string->data = token->pos + 1;
+                push_node(string, &strings->children);
 
                 reference = create_node(parent);
                 reference->kind = NK_STRING_REFERENCE;
                 reference->string = string;
-                push_node(reference);
+                push_node(reference, &parent->children);
 
                 lexer_next(token);
                 return reference;
@@ -81,10 +78,122 @@ static ast_node_t* parse_value(token_t* token, ast_node_t* parent)
         return NULL;
 }
 
+static ast_node_t* parse_variable_reference(token_t* token, ast_node_t* parent, ast_node_t* variable)
+{
+        ast_node_t* reference;
+
+        reference = create_node(parent);
+        reference->kind = NK_VARIABLE_REFERENCE;
+        reference->variable = variable;
+
+        push_node(reference, &parent->children);
+        return reference;
+}
+
+static ast_node_t* parse_local_variable(token_t* token, ast_node_t* procedure, ast_node_t* parent, ast_node_t* type)
+{
+        ast_node_t* variable;
+
+        variable = create_node(parent);
+        variable->kind = NK_LOCAL_VARIABLE;
+        variable->flags = NF_NAMED;
+        variable->type = type;
+
+        /* Find pointer depth */
+        variable->pointer_depth = 0;
+        lexer_next(token);
+        while (token->kind == TK_STAR && !(token->flags & TF_EQUALS)) {
+                variable->pointer_depth++;
+                lexer_next(token);
+        }
+
+        /* Set variable name */
+        if (token->kind != TK_IDENTIFIER) {
+                error(token, "Expected variable name\n");
+                delete_nodes(variable);
+                return NULL;
+        }
+        variable->name.string = token->pos;
+        variable->name.length = token->length;
+        variable->name.hash = token->hash;
+
+        /* Generate an assignment if the variable is initialized */
+        lexer_next(token);
+        if (token->kind == TK_EQUALS && !(token->flags & TF_EQUALS)) {
+                ast_node_t* assignment;
+
+                assignment = create_node(parent);
+                assignment->kind = NK_ASSIGNMENT;
+                assignment->destination = variable;
+
+                /* TODO: Verify that value is the same type as variable */
+                lexer_next(token);
+                if (parse_value(token, assignment) == NULL) {
+                        delete_nodes(assignment);
+                        delete_nodes(variable);
+                        return NULL;
+                }
+
+                push_node(assignment, &parent->children);
+        }
+
+        if (token->kind != TK_SEMICOLON) {
+                error(token, "Variable declaration must be terminated with a \";\"\n");
+                delete_nodes(variable);
+                return NULL;
+        }
+
+        /* Local size is different for pointers */
+        variable->local_offset = procedure->local_size;
+        if (variable->pointer_depth > 0) {
+                procedure->local_size += sizeof(void*);
+        } else {
+                procedure->local_size += type->bytes;
+        }
+
+        push_node(variable, &parent->children);
+        lexer_next(token);
+        return variable;
+}
+
+static ast_node_t* parse_assignment(token_t* token, ast_node_t* parent, ast_node_t* variable)
+{
+        ast_node_t* assignment;
+
+        assignment = create_node(parent);
+        assignment->kind = NK_ASSIGNMENT;
+        assignment->destination = variable;
+
+        lexer_next(token);
+        if (token->kind != TK_EQUALS || token->flags & TF_EQUALS) {
+                error(token, "Variable name must be followed by a \"=\"\n");
+                delete_nodes(assignment);
+                return NULL;
+        }
+
+        /* TODO: Verify that value is the same type as destination */
+        lexer_next(token);
+        if (parse_value(token, assignment) == NULL) {
+                delete_nodes(assignment);
+                return NULL;
+        }
+
+        if (token->kind != TK_SEMICOLON) {
+                error(token, "Assignment must be terminated with a \";\"\n");
+                delete_nodes(assignment);
+                return NULL;
+        }
+
+        push_node(assignment, &parent->children);
+        lexer_next(token);
+        return assignment;
+}
+
 static void parse_arguments(token_t* token, ast_node_t* parent)
 {
-        DEBUG("Parsing arguments...\n");
+        int n_arguments;
 
+        n_arguments = 0;
         while (token->kind != TK_RPAREN) {
                 ast_node_t* argument;
 
@@ -100,6 +209,12 @@ static void parse_arguments(token_t* token, ast_node_t* parent)
                                 break;
                         }
                 }
+
+                n_arguments++;
+        }
+
+        if (n_arguments != parent->callee->n_parameters) {
+                error(token, "\"%.*s\" requires %d arguments\n", parent->callee->name.length, parent->callee->name.string, parent->callee->n_parameters);
         }
 
         lexer_next(token);
@@ -109,116 +224,48 @@ static ast_node_t* parse_call(token_t* token, ast_node_t* parent, ast_node_t* ca
 {
         ast_node_t* call;
 
-        DEBUG("Parsing call to \"%.*s\"...\n", callee->name.length, callee->name.string);
-
         call = create_node(parent);
         call->kind = NK_CALL;
         call->callee = callee;
 
         parse_arguments(token, call);
 
-        push_node(call);
+        push_node(call, &parent->children);
         return call;
 }
 
-static ast_node_t* parse_variable_reference(token_t* token, ast_node_t* parent, ast_node_t* variable)
+static ast_node_t* parse_return(token_t* token, ast_node_t* parent)
 {
-        ast_node_t* reference;
+        ast_node_t* ret;
 
-        DEBUG("Parsing variable reference to \"%.*s\"...\n", variable->name.length, variable->name.string);
+        ret = create_node(parent);
+        ret->kind = NK_RETURN;
 
-        reference = create_node(parent);
-        reference->kind = NK_VARIABLE_REFERENCE;
-        reference->variable = variable;
-
-        push_node(reference);
-        return reference;
-}
-
-static ast_node_t* parse_assignment(token_t* token, ast_node_t* parent, ast_node_t* variable)
-{
-        ast_node_t* assignment;
-
-        DEBUG("Parsing assignment...\n");
-
-        assignment = create_node(parent);
-        assignment->kind = NK_ASSIGNMENT;
-        assignment->destination = variable;
-
+        /* Allow returning with no value */
         lexer_next(token);
-        if (token->kind != TK_EQUALS || token->flags & TF_EQUALS) {
-                error(token, "Variable name must be followed by a \"=\"\n");
-                delete_node(assignment);
-                return NULL;
-        }
-
-        lexer_next(token);
-        if (parse_value(token, assignment) == NULL) {
-                delete_node(assignment);
-                return NULL;
-        }
-
-        if (token->kind != TK_SEMICOLON) {
-                error(token, "Assignment must be terminated with a \";\"\n");
-                delete_node(assignment);
-                return NULL;
-        }
-
-        push_node(assignment);
-        lexer_next(token);
-        return assignment;
-}
-
-static ast_node_t* parse_local_declaration(token_t* token, ast_node_t* procedure, ast_node_t* parent, ast_node_t* type)
-{
-        ast_node_t* variable;
-
-        DEBUG("Parsing local declaration...\n");
-
-        variable = create_node(parent);
-        variable->kind = NK_VARIABLE;
-        variable->flags = NF_NAMED;
-        variable->type = type;
-        variable->name.string = token->pos;
-        variable->name.length = token->length;
-        variable->name.hash = token->hash;
-        variable->local_offset = procedure->local_size;
-        procedure->local_size += type->size;
-
-        /* Generate an assignment if the variable is initialized */
-        lexer_next(token);
-        if (token->kind == TK_EQUALS && !(token->flags & TF_EQUALS)) {
-                ast_node_t* assignment;
-
-                assignment = create_node(parent);
-                assignment->kind = NK_ASSIGNMENT;
-                assignment->destination = variable;
-
+        if (token->kind == TK_SEMICOLON) {
                 lexer_next(token);
-                if (parse_value(token, assignment) == NULL) {
-                        delete_node(assignment);
-                        delete_node(variable);
-                        return NULL;
-                }
-
-                push_node(assignment);
+                return ret;
         }
 
-        if (token->kind != TK_SEMICOLON) {
-                error(token, "Variable declaration must be terminated with a \";\"\n");
-                delete_node(variable);
+        if (parse_value(token, ret) == NULL) {
+                delete_nodes(ret);
                 return NULL;
         }
 
-        push_node(variable);
+        if (token->kind != TK_SEMICOLON) {
+                error(token, "Return must be terminated with a \";\"\n");
+                delete_nodes(ret);
+                return NULL;
+        }
+
+        push_node(ret, &parent->children);
         lexer_next(token);
-        return variable;
+        return ret;
 }
 
 static void parse_parameters(token_t* token, ast_node_t* procedure)
 {
-        DEBUG("Parsing parameters..\n");
-
         while (token->kind != TK_RPAREN) {
                 ast_node_t* parameter;
 
@@ -228,14 +275,15 @@ static void parse_parameters(token_t* token, ast_node_t* procedure)
 
                 if (token->kind != TK_IDENTIFIER) {
                         error(token, "Expected parameter type\n");
-                        delete_node(parameter);
+                        delete_nodes(parameter);
                         return;
                 }
 
                 /* Find parameter type */
-                parameter->type = find_node_of_kind(token, root, NK_BUILTIN_TYPE);
+                parameter->type = find_type(token);
                 if (parameter->type == NULL) {
-                        delete_node(parameter);
+                        error(token, "type \"%.*s\" does not exist\n", token->length, token->pos);
+                        delete_nodes(parameter);
                         return;
                 }
 
@@ -249,21 +297,22 @@ static void parse_parameters(token_t* token, ast_node_t* procedure)
 
                 if (token->kind != TK_IDENTIFIER) {
                         error(token, "Parameter type must be followed by a parameter name\n");
-                        delete_node(parameter);
+                        delete_nodes(parameter);
                         return;
                 }
 
                 /* Prevent redeclarations */
                 if (find_node(token, procedure) != NULL) {
                         error(token, "\"%.*s\" has already been declared\n", token->length, token->pos);
-                        delete_node(parameter);
+                        delete_nodes(parameter);
                         return;
                 }
 
                 parameter->name.string = token->pos;
                 parameter->name.length = token->length;
                 parameter->name.hash = token->hash;
-                push_node(parameter);
+                push_node(parameter, &procedure->parameters);
+                procedure->n_parameters++;
 
                 /* Commas seperate multiple parameters */
                 lexer_next(token);
@@ -286,14 +335,23 @@ static void parse_parameters(token_t* token, ast_node_t* procedure)
 
 static void parse_procedure_body(token_t* token, ast_node_t* procedure)
 {
-        DEBUG("Parsing procedure body...\n");
-
         while (token->kind != TK_RCURLY) {
                 ast_node_t* node;
+
+                if (token->kind == TK_RETURN) {
+                        parse_return(token, procedure);
+                        return;
+                }
 
                 if (token->kind != TK_IDENTIFIER) {
                         error(token, "Expected identifier\n");
                         return;
+                }
+
+                node = find_type(token);
+                if (node != NULL) {
+                        parse_local_variable(token, procedure, procedure, node);
+                        continue;
                 }
 
                 node = find_node(token, procedure);
@@ -312,11 +370,8 @@ static void parse_procedure_body(token_t* token, ast_node_t* procedure)
                         }
 
                         lexer_next(token);
-                        DEBUG("Done with call...\n");
                 } else if (token->kind == TK_EQUALS && !(token->flags & TF_EQUALS)) {
                         parse_assignment(token, procedure, node);
-                } else if (token->kind == TK_IDENTIFIER) {
-                        parse_local_declaration(token, procedure, procedure, node);
                 } else {
                         error(token, "Expected \"(\", \"=\", or type after identifier\n", token->length, token->pos);
                         return;
@@ -328,18 +383,17 @@ static void parse_procedure(token_t* token)
 {
         ast_node_t* procedure;
 
-        DEBUG("Parsing procedure...\n");
-
-        procedure = create_node(root);
+        procedure = create_node(procedures);
         procedure->kind = NK_PROCEDURE;
         procedure->flags = NF_NAMED;
+        procedure->n_parameters = 0;
         procedure->local_size = 0;
 
         /* Procedure name */
         lexer_next(token);
         if (token->kind != TK_IDENTIFIER) {
                 error(token, "\"proc\" must be followed by the procedure's name\n");
-                delete_node(procedure);
+                delete_nodes(procedure);
                 return;
         }
         procedure->name.string = token->pos;
@@ -349,7 +403,7 @@ static void parse_procedure(token_t* token)
         lexer_next(token);
         if (token->kind != TK_LPAREN) {
                 error(token, "Procedure name must be followed by a \"(\"\n");
-                delete_node(procedure);
+                delete_nodes(procedure);
                 return;
         }
 
@@ -358,7 +412,7 @@ static void parse_procedure(token_t* token)
         parse_parameters(token, procedure);
         if (token->kind != TK_RPAREN) {
                 error(token, "Parameter list must be followed by a \")\"\n");
-                delete_node(procedure);
+                delete_nodes(procedure);
                 return;
         }
 
@@ -371,20 +425,20 @@ static void parse_procedure(token_t* token)
                         return;
                 }
 
-                procedure->return_type = find_node_of_kind(token, root, NK_BUILTIN_TYPE);
-                if (procedure->return_type == NULL) {
-                        error(token, "\"%.*s\" has not been declared or is not a type\n", token->length, token->pos);
+                procedure->type = find_type(token);
+                if (procedure->type == NULL) {
+                        error(token, "type \"%.*s\" does not exist\n", token->length, token->pos);
                         return;
                 }
 
                 lexer_next(token);
         } else {
-                procedure->return_type = NULL;
+                procedure->type = NULL;
         }
 
         /* Procedure declarations may be terminated by a ";" */
         if (token->kind == TK_SEMICOLON) {
-                push_node(procedure);
+                push_node(procedure, &procedures->children);
                 lexer_next(token);
                 return;
         }
@@ -392,22 +446,21 @@ static void parse_procedure(token_t* token)
         /* If there is no semicolon, a "{" must start the procedure body */
         if (token->kind != TK_LCURLY) {
                 error(token, "Procedure declaration must be terminated with a \";\" or \"{\"\n");
-                delete_node(procedure);
+                delete_nodes(procedure);
                 return;
         }
 
         /* Parse procedure body, if not empty */
         lexer_next(token);
         if (token->kind != TK_RCURLY) {
-                procedure->flags |= NF_DEFINITION;
                 parse_procedure_body(token, procedure);
                 if (token->kind != TK_RCURLY) {
-                        delete_node(procedure);
+                        delete_nodes(procedure);
                         return;
                 }
         }
 
-        push_node(procedure);
+        push_node(procedure, &procedures->children);
         lexer_next(token);
 }
 
@@ -415,15 +468,14 @@ ast_node_t* parse(char* source, ast_node_t** strings_out)
 {
         token_t token;
 
-        DEBUG("Parsing...\n");
+        procedures = create_node(NULL);
+        procedures->kind = NK_UNKNOWN;
 
-        root = malloc(sizeof(ast_node_t));
-        strings = malloc(sizeof(ast_node_t));
-        memset(root, 0, sizeof(ast_node_t));
-        memset(strings, 0, sizeof(ast_node_t));
+        strings = create_node(NULL);
+        strings->kind = NK_UNKNOWN;
         next_string_id = 0;
 
-        init_types(root);
+        init_types();
 
         lexer_init(source);
         lexer_next(&token);
@@ -438,5 +490,5 @@ ast_node_t* parse(char* source, ast_node_t** strings_out)
         }
 
         *strings_out = strings;
-        return root;
+        return procedures;
 }

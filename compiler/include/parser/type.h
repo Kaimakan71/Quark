@@ -9,6 +9,7 @@
 #include <lexer/token.h>
 #include <parser/ast.h>
 
-void init_types(ast_node_t* root);
+ast_node_t* find_type(token_t* name);
+void init_types();
 
 #endif /* _TYPES_H */

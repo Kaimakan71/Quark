@@ -11,66 +11,70 @@
 #include <lexer/token.h>
 
 typedef enum {
+        NK_UNKNOWN,
         NK_BUILTIN_TYPE,
+        NK_STRING,
         NK_PROCEDURE,
         NK_PARAMETER,
-        NK_VARIABLE,
-        NK_CALL,
-        NK_NUMBER,
+        NK_LOCAL_VARIABLE,
         NK_ASSIGNMENT,
+        NK_CALL,
+        NK_RETURN,
+        NK_NUMBER,
         NK_VARIABLE_REFERENCE,
-
-        NK_STRING,
-        NK_STRING_REFERENCE
+        NK_STRING_REFERENCE,
 } node_kind_t;
 
 #define NF_NONE 0
-#define NF_NAMED (1 << 0)
-#define NF_DEFINITION (1 << 1)
+#define NF_NAMED         (1 << 0)
+#define NF_RETURNS_VALUE (1 << 1)
+
+struct ast_node;
+
+typedef struct {
+        struct ast_node* head;
+        struct ast_node* tail;
+} ast_node_list_t;
 
 typedef struct ast_node {
         node_kind_t kind;
         uint8_t flags;
         name_t name;
 
-        union {
-                size_t size; /* Builtin type */
-                size_t local_offset; /* Local variable */
-                struct ast_node* callee; /* Call */
-                uint64_t value; /* Number */
-                struct ast_node* destination; /* Assignment */
-                struct ast_node* variable; /* Variable reference */
-        };
-
         /* Procedure */
+        int n_parameters;
+        ast_node_list_t parameters;
         size_t local_size;
-        struct ast_node* return_type;
 
-        /* Parameter / variable */
+        /* Procedure, parameter, local variable */
         struct ast_node* type;
-        size_t pointer_depth;
+        int pointer_depth;
 
         /* String */
-        unsigned int string_id;
-        size_t string_length;
-        char* string_data;
+        int id;
+        size_t length;
+        char* data;
 
-        /* String reference */
-        struct ast_node* string;
+        /* Fields only used by one kind of node */
+        union {
+                size_t bytes;                 /* Builtin type */
+                int local_offset;             /* Local variable */
+                struct ast_node* destination; /* Assignment */
+                struct ast_node* callee;      /* Call */
+                uint64_t value;               /* Number */
+                struct ast_node* variable;    /* Variable reference */
+                struct ast_node* string;      /* String reference */
+        };
 
         struct ast_node* parent;
-        struct {
-                struct ast_node* head;
-                struct ast_node* tail;
-        } children;
+        ast_node_list_t children;
         struct ast_node* prev;
         struct ast_node* next;
 } ast_node_t;
 
 ast_node_t* create_node(ast_node_t* parent);
-void push_node(ast_node_t* node);
-void delete_node(ast_node_t* top_node);
+void push_node(ast_node_t* node, ast_node_list_t* list);
+void delete_nodes(ast_node_t* top_node);
 ast_node_t* find_node(token_t* name, ast_node_t* parent);
-ast_node_t* find_node_of_kind(token_t* name, ast_node_t* parent, node_kind_t kind);
 
 #endif /* _AST_H */

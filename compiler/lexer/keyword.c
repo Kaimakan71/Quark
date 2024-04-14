@@ -60,5 +60,5 @@ void init_keywords()
         }
 
         create_keyword("proc", TK_PROC);
-        /* create_keyword("return", TK_RETURN); */
+        create_keyword("return", TK_RETURN);
 }

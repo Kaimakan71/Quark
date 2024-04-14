@@ -9,6 +9,8 @@ section .text
 
 global _start
 _start:
+	endbr64
+
 	mov rdi, [rsp]
 	mov rsi, rsp
 	add rsi, 8
