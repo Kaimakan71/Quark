@@ -13,6 +13,7 @@ static char* arg_regs[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 #define N_ARG_REGS (sizeof(arg_regs) / sizeof(arg_regs[0]))
 
 static void generate_call(ast_node_t* call);
+static void generate_statement(ast_node_t* statement, ast_node_t* procedure);
 
 static void generate_value(char* destination, ast_node_t* value)
 {
@@ -105,29 +106,53 @@ static void generate_return(ast_node_t* ret, ast_node_t* procedure)
         }
 }
 
+static void generate_if(ast_node_t* node, ast_node_t* procedure)
+{
+        int label;
+        ast_node_t* statement;
+
+        label = rand();
+
+        generate_value("rax", node->children.head->children.head);
+        fprintf(out, "  cmp rax, 0\n  je .if%x\n", label);
+
+        statement = node->children.head->next;
+        while (statement != NULL) {
+                generate_statement(statement, procedure);
+
+                statement = statement->next;
+        }
+
+        fprintf(out, ".if%x:\n", label);
+}
+
+static void generate_statement(ast_node_t* statement, ast_node_t* procedure)
+{
+        if (statement->kind == NK_RETURN) {
+                generate_return(statement, procedure);
+        } else if (statement->kind == NK_IF) {
+                generate_if(statement, procedure);
+        } else if (statement->kind == NK_CALL) {
+                generate_call(statement);
+        } else if (statement->kind == NK_ASSIGNMENT) {
+                generate_assignment(statement);
+        }
+}
+
 static void generate_procedure(ast_node_t* procedure)
 {
-        ast_node_t* node;
+        ast_node_t* statement;
 
         fprintf(out, "global %.*s\n%.*s:\n  push rbp\n  mov rbp, rsp\n", procedure->name.length, procedure->name.string, procedure->name.length, procedure->name.string);
         if (procedure->local_size > 0) {
                 fprintf(out, "  sub rsp, 0x%lx\n", procedure->local_size);
         }
 
-        node = procedure->children.head;
-        while (node != NULL) {
-                if (node->kind == NK_RETURN) {
-                        generate_return(node, procedure);
+        statement = procedure->children.head;
+        while (statement != NULL) {
+                generate_statement(statement, procedure);
 
-                        /* If a return statement always runs, nothing will happen after */
-                        return;
-                } else if (node->kind == NK_CALL) {
-                        generate_call(node);
-                } else if (node->kind == NK_ASSIGNMENT) {
-                        generate_assignment(node);
-                }
-
-                node = node->next;
+                statement = statement->next;
         }
 
         if (procedure->local_size > 0) {

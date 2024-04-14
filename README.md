@@ -10,11 +10,6 @@ Run `make test` to run compiler tests (which are in the `test` directory).
 `./compiler/quarkc -i <input file> -o <output file>`. This will generate assembly code from the quark source code. If you want to assemble the program, you can use NASM `nasm <asm file> -f elf64 -o <output file>`.
 
 # TODO
-- [x] Variables as arguments (e.g. `write(0, "hi", length);`)
-- [x] Initialized local variables (e.g. `uint x = strlen("Test!");`)
-- [x] More kinds of assignment values (e.g. strings and numbers)
-- [x] Return statements
-- [x] Refactor string (initialized data) system
-- [ ] If statements
-- [ ] Escape sequences in characters and strings (e.g. `"Hello\n"`)
-- [ ] Global variables/constants (e.g. `const uint8 debugLevel = 0x03;`)
+* Expression/condition parsing
+* Escape sequences (e.g. `"Hi\n"`)
+* Global variables/constants (e.g. `const uint8 debugLevel = 0x03;`)

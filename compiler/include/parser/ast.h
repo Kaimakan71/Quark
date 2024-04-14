@@ -20,6 +20,8 @@ typedef enum {
         NK_ASSIGNMENT,
         NK_CALL,
         NK_RETURN,
+        NK_IF,
+        NK_CONDITION,
         NK_NUMBER,
         NK_VARIABLE_REFERENCE,
         NK_STRING_REFERENCE,

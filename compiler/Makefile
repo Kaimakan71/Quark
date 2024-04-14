@@ -11,7 +11,7 @@ LD ?= ld
 NASM ?= nasm
 
 TESTS_TARGET = linux
-TESTS_OFILES = tests/exit.o tests/write.o tests/file.o
+TESTS_OFILES = tests/exit.o tests/write.o tests/file.o tests/if.o
 LIB_OFILES = ../lib/$(TESTS_TARGET)/entry.o ../lib/$(TESTS_TARGET)/system.o ../lib/string.o
 
 ifeq ($(TESTS_TARGET),hyra)
@@ -34,7 +34,7 @@ $(BINARY): $(OFILES)
 	@echo Compiling $<...
 	@$(CC) -c $< $(CFLAGS) -o $@
 
-test: tests/exit.elf tests/write.elf tests/file.elf
+test: tests/exit.elf tests/write.elf tests/file.elf tests/if.elf
 
 %.elf: %.o
 	@echo Linking $@...

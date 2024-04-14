@@ -1,0 +1,9 @@
+proc main() -> uint {
+	uint test = 69;
+
+	if (test) {
+		return 1;
+	}
+
+	return 0;
+}

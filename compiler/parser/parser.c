@@ -18,6 +18,7 @@ static int next_string_id;
 
 static ast_node_t* parse_call(token_t* token, ast_node_t* parent, ast_node_t* callee);
 static ast_node_t* parse_variable_reference(token_t* token, ast_node_t* parent, ast_node_t* variable);
+static void parse_statement(token_t* token, ast_node_t* procedure, ast_node_t* parent);
 
 static ast_node_t* parse_value(token_t* token, ast_node_t* parent)
 {
@@ -264,6 +265,107 @@ static ast_node_t* parse_return(token_t* token, ast_node_t* parent)
         return ret;
 }
 
+static ast_node_t* parse_if(token_t* token, ast_node_t* procedure, ast_node_t* parent)
+{
+        ast_node_t* condition;
+        ast_node_t* node;
+
+        lexer_next(token);
+        if (token->kind != TK_LPAREN) {
+                error(token, "Expected \"(\" after \"if\"\n");
+                return NULL;
+        }
+
+        node = create_node(parent);
+        node->kind = NK_IF;
+
+        condition = create_node(node);
+        condition->kind = NK_CONDITION;
+        push_node(condition, &node->children);
+
+        lexer_next(token);
+        if (parse_value(token, condition) == NULL) {
+                delete_nodes(node);
+                return NULL;
+        }
+
+        if (token->kind != TK_RPAREN) {
+                error(token, "Expected \")\" after condition\n");
+                delete_nodes(node);
+                return NULL;
+        }
+
+        lexer_next(token);
+        if (token->kind != TK_LCURLY) {
+                error(token, "Expected \"{\" after \")\"\n");
+                delete_nodes(node);
+                return NULL;
+        }
+
+        lexer_next(token);
+        while (token->kind != TK_RCURLY) {
+                parse_statement(token, procedure, node);
+        }
+
+        if (token->kind != TK_RCURLY) {
+                delete_nodes(node);
+                return NULL;
+        }
+
+        push_node(node, &parent->children);
+        lexer_next(token);
+        return node;
+}
+
+static void parse_statement(token_t* token, ast_node_t* procedure, ast_node_t* parent)
+{
+        ast_node_t* node;
+
+        if (token->kind == TK_RETURN) {
+                parse_return(token, parent);
+                return;
+        }
+
+        if (token->kind == TK_IF) {
+                parse_if(token, procedure, parent);
+                return;
+        }
+
+        if (token->kind != TK_IDENTIFIER) {
+                error(token, "Expected identifier\n");
+                return;
+        }
+
+        node = find_type(token);
+        if (node != NULL) {
+                parse_local_variable(token, procedure, parent, node);
+                return;
+        }
+
+        node = find_node(token, parent);
+        if (node == NULL) {
+                error(token, "\"%.*s\" does not exist\n", token->length, token->pos);
+                return;
+        }
+
+        lexer_next(token);
+        if (token->kind == TK_LPAREN) {
+                lexer_next(token);
+                parse_call(token, parent, node);
+                if (token->kind != TK_SEMICOLON) {
+                        error(token, "Call must be terminated with a \";\"\n");
+                        return;
+                }
+
+                lexer_next(token);
+        } else if (token->kind == TK_EQUALS && !(token->flags & TF_EQUALS)) {
+                parse_assignment(token, parent, node);
+        } else {
+                error(token, "Expected call or assignment\n");
+                return;
+        }
+}
+
 static void parse_parameters(token_t* token, ast_node_t* procedure)
 {
         while (token->kind != TK_RPAREN) {
@@ -328,52 +430,6 @@ static void parse_parameters(token_t* token, ast_node_t* procedure)
 
                 if (token->kind != TK_RPAREN) {
                         error(token, "Parameter lists must be terminated with a \")\"\n");
-                        return;
-                }
-        }
-}
-
-static void parse_procedure_body(token_t* token, ast_node_t* procedure)
-{
-        while (token->kind != TK_RCURLY) {
-                ast_node_t* node;
-
-                if (token->kind == TK_RETURN) {
-                        parse_return(token, procedure);
-                        return;
-                }
-
-                if (token->kind != TK_IDENTIFIER) {
-                        error(token, "Expected identifier\n");
-                        return;
-                }
-
-                node = find_type(token);
-                if (node != NULL) {
-                        parse_local_variable(token, procedure, procedure, node);
-                        continue;
-                }
-
-                node = find_node(token, procedure);
-                if (node == NULL) {
-                        error(token, "\"%.*s\" does not exist\n", token->length, token->pos);
-                        return;
-                }
-
-                lexer_next(token);
-                if (token->kind == TK_LPAREN) {
-                        lexer_next(token);
-                        parse_call(token, procedure, node);
-                        if (token->kind != TK_SEMICOLON) {
-                                error(token, "Call must be terminated with a \";\"\n");
-                                return;
-                        }
-
-                        lexer_next(token);
-                } else if (token->kind == TK_EQUALS && !(token->flags & TF_EQUALS)) {
-                        parse_assignment(token, procedure, node);
-                } else {
-                        error(token, "Expected \"(\", \"=\", or type after identifier\n", token->length, token->pos);
                         return;
                 }
         }
@@ -453,7 +509,10 @@ static void parse_procedure(token_t* token)
         /* Parse procedure body, if not empty */
         lexer_next(token);
         if (token->kind != TK_RCURLY) {
-                parse_procedure_body(token, procedure);
+                while (token->kind != TK_RCURLY) {
+                        parse_statement(token, procedure, procedure);
+                }
+
                 if (token->kind != TK_RCURLY) {
                         delete_nodes(procedure);
                         return;
