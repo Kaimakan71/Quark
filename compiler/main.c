@@ -106,9 +106,17 @@ static void print_tree(ast_node_t* root)
         node = root->children.head;
         indent = 0;
         while (node != NULL) {
+                printf("%*s", indent, "");
+
                 switch (node->kind) {
                 case NK_BUILTIN_TYPE:
                         printf("Builtin type %.*s (%lu bytes)\n", node->name.length, node->name.string, node->bytes);
+                        break;
+                case NK_PROCEDURE:
+                        printf("Procedure %.*s (%s)\n", node->name.length, node->name.string, node->flags & NF_PUBLIC ? "public":"private");
+                        break;
+                case NK_PARAMETER:
+                        printf("Parameter %.*s (%.*s)\n", node->name.length, node->name.string, node->type->name.length, node->type->name.string);
                         break;
                 default:
                         printf("Unknown\n");
@@ -169,6 +177,7 @@ int main(int argc, char* argv[])
         parser_parse(parser);
 
         print_tree(parser->types);
+        print_tree(parser->procedures);
 
         parser_destory(parser);
 

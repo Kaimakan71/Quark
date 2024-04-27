@@ -12,12 +12,15 @@
 
 typedef enum {
         NK_UNKNOWN,
-        NK_BUILTIN_TYPE
+        NK_BUILTIN_TYPE,
+        NK_PROCEDURE,
+        NK_PARAMETER
 } node_kind_t;
 
 #define NF_NONE 0
-#define NF_NAMED         (1 << 0)
-#define NF_RETURNS_VALUE (1 << 1)
+#define NF_PUBLIC        (1 << 0)
+#define NF_NAMED         (1 << 1)
+#define NF_RETURNS_VALUE (1 << 2)
 
 struct ast_node;
 

@@ -49,6 +49,8 @@ void delete_nodes(ast_node_t* top_node)
 
         node = top_node;
         while (node != NULL) {
+                /* TODO: Free procedure parameters */
+
                 if (node->children.head != NULL) {
                         next = node->children.head;
                         free(node);

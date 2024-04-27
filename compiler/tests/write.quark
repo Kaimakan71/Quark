@@ -1,7 +1,7 @@
 proc write(uint fd, char* buf, uint count) -> uint;
 proc strlen(char* s) -> uint;
 
-proc main() -> uint {
+public proc main() -> uint {
 	char* msg = "Hello from Quark!";
 
 	write(1, msg, strlen(msg));

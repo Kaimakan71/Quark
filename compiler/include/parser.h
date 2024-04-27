@@ -11,9 +11,16 @@
 
 typedef struct {
         lexer_t* lexer;
+        token_t token;
         ast_node_t* types;
         ast_node_t* procedures;
 } parser_t;
+
+static inline token_t* next_token(parser_t* parser)
+{
+        lexer_next(parser->lexer, &parser->token);
+        return &parser->token;
+}
 
 void parser_destory(parser_t* parser);
 void parser_parse(parser_t* parser);

@@ -1,4 +1,4 @@
-proc main() -> uint {
+public proc main() -> uint {
 	uint test = 69;
 
 	if (test) {

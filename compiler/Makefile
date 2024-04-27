@@ -2,7 +2,10 @@
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
 BINARY = quarkc
-OFILES = error.o hash.o lexer/char_info.o lexer/keyword.o lexer/lexer.o parser/ast.o parser/type.o parser/parser.o main.o
+OFILES = error.o hash.o \
+         lexer/char_info.o lexer/keyword.o lexer/lexer.o \
+	 parser/ast.o parser/type.o parser/procedure.o parser/parser.o \
+	 main.o
 CFLAGS = -I include
 LDFLAGS =
 
