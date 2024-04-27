@@ -3,8 +3,8 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
-#ifndef _KEYWORD_H
-#define _KEYWORD_H
+#ifndef _LEXER_KEYWORD_H
+#define _LEXER_KEYWORD_H
 
 #include <name.h>
 #include <lexer/token.h>
@@ -24,4 +24,4 @@ typedef struct {
 keyword_t* find_keyword(token_t* token);
 void init_keywords();
 
-#endif /* _KEYWORD_H */
+#endif /* !_LEXER_KEYWORD_H */

@@ -5,6 +5,7 @@
  */
 #include <stddef.h>
 #include <string.h>
+#include <debug.h>
 #include <hash.h>
 #include <lexer/keyword.h>
 
@@ -53,13 +54,15 @@ keyword_t* find_keyword(token_t* token)
 
 void init_keywords()
 {
+        DEBUG("lexer: Initializing keywords...");
+
         /* Clear all hashmap rows */
         for (int r = 0; r < KEYWORD_MAP_ROWS; r++) {
                 keyword_map[r].head = NULL;
                 keyword_map[r].tail = NULL;
         }
 
+        /* Add keywords to map */
         create_keyword("proc", TK_PROC);
-        create_keyword("return", TK_RETURN);
-        create_keyword("if", TK_IF);
+        create_keyword("public", TK_PUBLIC);
 }

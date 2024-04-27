@@ -11,4 +11,4 @@
 
 void codegen(ast_node_t* root, ast_node_t* strings, FILE* out);
 
-#endif /* _CODEGEN_H */
+#endif /* !_CODEGEN_H */

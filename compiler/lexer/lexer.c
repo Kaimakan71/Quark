@@ -3,46 +3,40 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
+#include <stdlib.h>
 #include <string.h>
-#include <error.h>
+#include <debug.h>
 #include <hash.h>
+#include <lexer.h>
 #include <lexer/char_info.h>
 #include <lexer/keyword.h>
-#include <lexer/lexer.h>
 
-static char* input;
-static char* pos;
-static char* line_start;
-static int line;
-
-static void skip_whitespace(void)
+static void skip_whitespace(lexer_t* lexer)
 {
-        while (char_info[*pos] & CHAR_WHITESPACE) {
-                while (char_info[*pos] & CHAR_VERT_WS) {
-                        pos++;
-                        line++;
-                        line_start = pos;
+        while (char_info[*lexer->pos] & CHAR_WHITESPACE) {
+                if (char_info[*lexer->pos] & CHAR_VERT_WS) {
+                        lexer->pos++;
+                        lexer->line++;
+                        lexer->line_start = lexer->pos;
                 }
 
-                while (char_info[*pos] & CHAR_HORZ_WS) {
-                        pos++;
-                }
+                lexer->pos++;
         }
 }
 
-static void lex_identifier(token_t* token)
+static void lex_identifier(lexer_t* lexer, token_t* token)
 {
         keyword_t* keyword;
 
         /* Find end of identifier */
-        pos++;
-        while (char_info[*pos] & CHAR_ALNUM || *pos == '_') {
-                pos++;
+        lexer->pos++;
+        while (char_info[*lexer->pos] & CHAR_ALNUM || *lexer->pos == '_') {
+                lexer->pos++;
         }
 
         /* Fill in token struct */
         token->kind = TK_IDENTIFIER;
-        token->length = (size_t)(pos - token->pos);
+        token->length = (size_t)(lexer->pos - token->pos);
         token->hash = hash_data(token->pos, token->length);
 
         /* Look for a keyword the identifier matches */
@@ -52,18 +46,18 @@ static void lex_identifier(token_t* token)
         }
 }
 
-static void lex_operator(token_t* token)
+static void lex_operator(lexer_t* lexer, token_t* token)
 {
         token->length = 1;
 
-        switch (*pos) {
+        switch (*lexer->pos) {
         case '+':
-                if (pos[1] == '+') {
+                if (lexer->pos[1] == '+') {
                         token->kind = TK_INCREMENT;
                         token->length = 2;
-                } else if (pos[1] == '=') {
+                } else if (lexer->pos[1] == '=') {
                         token->kind = TK_PLUS;
-                        token->flags |= TF_EQUALS;
+                        token->flags |= TF_ASSIGNMENT;
                         token->length = 2;
                 } else {
                         token->kind = TK_PLUS;
@@ -71,15 +65,15 @@ static void lex_operator(token_t* token)
 
                 break;
         case '-':
-                if (pos[1] == '>') {
+                if (lexer->pos[1] == '>') {
                         token->kind = TK_ARROW;
                         token->length = 2;
-                } else if (pos[1] == '-') {
+                } else if (lexer->pos[1] == '-') {
                         token->kind = TK_DECREMENT;
                         token->length = 2;
-                } else if (pos[1] == '=') {
+                } else if (lexer->pos[1] == '=') {
                         token->kind = TK_MINUS;
-                        token->flags |= TF_EQUALS;
+                        token->flags |= TF_ASSIGNMENT;
                         token->length = 2;
                 } else {
                         token->kind = TK_MINUS;
@@ -89,141 +83,169 @@ static void lex_operator(token_t* token)
         case '~':
                 token->kind = TK_TILDE;
                 break;
+        case '=':
+                token->kind = TK_EQUALS;
+                break;
         default:
-                token->kind = char_info[*pos] >> CHAR_OPER_SHIFT;
-                if (pos[1] == '=') {
-                        token->flags |= TF_EQUALS;
+                token->kind = char_info[*lexer->pos] >> CHAR_OPER_SHIFT;
+                if (lexer->pos[1] == '=') {
+                        token->flags |= TF_ASSIGNMENT;
                         token->length =  2;
                 }
 
                 break;
         }
 
-        pos += token->length;
+        lexer->pos += token->length;
 }
 
-static void lex_number_base16(token_t* token)
+static void lex_number_base16(lexer_t* lexer, token_t* token)
 {
         /* Calculate value of hex number */
         token->value = 0;
-        pos += 2;
-        while (char_info[*pos] & CHAR_HEX) {
+        lexer->pos += 2;
+        while (char_info[*lexer->pos] & CHAR_HEX) {
                 token->value <<= 4;
 
-                if (char_info[*pos] == CHAR_XUPPER) {
-                        token->value |= *pos++ - 'A' + 10;
-                } else if (char_info[*pos] == CHAR_XLOWER) {
-                        token->value |= *pos++ - 'a' + 10;
+                if (char_info[*lexer->pos] == CHAR_XUPPER) {
+                        token->value |= *lexer->pos++ - 'A' + 10;
+                } else if (char_info[*lexer->pos] == CHAR_XLOWER) {
+                        token->value |= *lexer->pos++ - 'a' + 10;
                 } else {
-                        token->value |= *pos++ - '0';
+                        token->value |= *lexer->pos++ - '0';
                 }
         }
 }
 
-static void lex_number_base10(token_t* token)
+static void lex_number_base10(lexer_t* lexer, token_t* token)
 {
         /* Calculate value of decimal number */
-        token->value = *pos - '0';
-        pos++;
-        while (char_info[*pos] & CHAR_DIGIT) {
+        token->value = *lexer->pos - '0';
+        lexer->pos++;
+        while (char_info[*lexer->pos] & CHAR_DIGIT) {
                 token->value *= 10;
-                token->value += *pos++ - '0';
+                token->value += *lexer->pos++ - '0';
         }
 }
 
-static void lex_string(token_t* token)
+static void lex_string(lexer_t* lexer, token_t* token)
 {
-        /* TODO: Escape sequences */
+        /* TODO: Ignore escaped quotes */
 
         /* Find end of string */
-        pos++;
-        while (*pos != '"') {
-                pos++;
+        lexer->pos++;
+        while (*lexer->pos != '"') {
+                lexer->pos++;
         }
-        pos++;
+        lexer->pos++;
 
         token->kind = TK_STRING;
-        token->length = (size_t)(pos - token->pos) - 1;
+        token->length = (size_t)(lexer->pos - token->pos) - 1;
 }
 
-static void lex_character(token_t* token)
+static void lex_character(lexer_t* lexer, token_t* token)
 {
-        /* TODO: Escape sequences */
+        /* TODO: Ignore escaped quotes */
 
         /* Find end of character */
-        pos++;
-        while (*pos != '\'') {
-                pos++;
+        lexer->pos++;
+        while (*lexer->pos != '\'') {
+                lexer->pos++;
         }
+        lexer->pos++;
 
         token->kind = TK_CHARACTER;
-        token->length = (size_t)(pos - token->pos) - 1;
+        token->length = (size_t)(lexer->pos - token->pos) - 1;
 }
 
-void lexer_next(token_t* token)
+void lexer_destroy(lexer_t* lexer)
 {
-        skip_whitespace();
+        DEBUG("lexer: Destroying lexer...");
+
+        if (lexer != NULL) {
+                free(lexer);
+        }
+}
+
+void lexer_next(lexer_t* lexer, token_t* token)
+{
+        if (lexer == NULL || token == NULL) {
+                return;
+        }
+
+        skip_whitespace(lexer);
 
         token->flags = TF_NONE;
-        token->pos = pos;
-        token->line = line;
-        token->column = (int)(token->pos - line_start) + 1;
+        token->pos = lexer->pos;
+        token->line = lexer->line;
+        token->column = (int)(token->pos - lexer->line_start) + 1;
 
-        if (char_info[*pos] & CHAR_ALPHA || *pos == '_') {
-                lex_identifier(token);
+        if (char_info[*lexer->pos] & CHAR_ALPHA || *lexer->pos == '_') {
+                lex_identifier(lexer, token);
                 return;
         }
 
-        if (char_info[*pos] & CHAR_SINGLE) {
-                token->kind = char_info[*pos] >> CHAR_SINGLE_SHIFT;
+        if (char_info[*lexer->pos] & CHAR_SINGLE) {
+                token->kind = char_info[*lexer->pos] >> CHAR_SINGLE_SHIFT;
                 token->length = 1;
-                pos++;
+                lexer->pos++;
                 return;
         }
 
-        if (char_info[*pos] & CHAR_OPER) {
-                lex_operator(token);
+        if (char_info[*lexer->pos] & CHAR_OPER) {
+                lex_operator(lexer, token);
                 return;
         }
 
-        if (char_info[*pos] & CHAR_DIGIT) {
+        if (char_info[*lexer->pos] & CHAR_DIGIT) {
                 token->kind = TK_NUMBER;
 
-                if (pos[0] == '0' && pos[1] == 'x') {
-                        lex_number_base16(token);
+                if (lexer->pos[0] == '0' && lexer->pos[1] == 'x') {
+                        lex_number_base16(lexer, token);
                 } else {
-                        lex_number_base10(token);
+                        lex_number_base10(lexer, token);
                 }
 
-                token->length = (size_t)(pos - token->pos);
+                token->length = (size_t)(lexer->pos - token->pos);
                 return;
         }
 
-        if (*pos == '"') {
-                lex_string(token);
+        if (*lexer->pos == '"') {
+                lex_string(lexer, token);
                 return;
         }
 
-        if (*pos == '\'') {
-                lex_character(token);
+        if (*lexer->pos == '\'') {
+                lex_character(lexer, token);
                 return;
         }
 
-        if (*pos == '\0') {
+        if (*lexer->pos == '\0') {
                 token->kind = TK_EOF;
                 return;
         }
 
         token->kind = TK_UNKNOWN;
-        error(token, "unexpected '%c'\n", *token->pos);
+        return;
 }
 
-void lexer_init(char* source)
+lexer_t* create_lexer(char* source)
 {
-        input = source;
-        pos = input;
-        line_start = pos;
-        line = 1;
+        lexer_t* lexer;
 
+        DEBUG("lexer: Creating lexer...");
+
+        if (source == NULL) {
+                return NULL;
+        }
+
+        lexer = malloc(sizeof(lexer_t));
+        lexer->pos = source;
+        lexer->line_start = source;
+        lexer->line = 1;
+
+        /* TODO: Only initialize keywords once */
         init_keywords();
+
+        return lexer;
 }

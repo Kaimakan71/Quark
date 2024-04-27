@@ -11,4 +11,4 @@
 void error(token_t* token, char* fmt, ...);
 void warn(token_t* token, char* fmt, ...);
 
-#endif /* _ERROR_H */
+#endif /* !_ERROR_H */

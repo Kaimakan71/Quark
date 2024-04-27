@@ -6,6 +6,7 @@
 #ifndef _NAME_H
 #define _NAME_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct {
@@ -14,4 +15,4 @@ typedef struct {
         uint32_t hash;
 } name_t;
 
-#endif /* _NAME_H */
+#endif /* !_NAME_H */

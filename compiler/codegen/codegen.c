@@ -5,7 +5,7 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#include <codegen/codegen.h>
+#include <codegen.h>
 
 static FILE* out;
 static char* arg_regs[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };

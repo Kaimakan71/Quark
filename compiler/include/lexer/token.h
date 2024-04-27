@@ -3,8 +3,8 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
-#ifndef _TOKEN_H
-#define _TOKEN_H
+#ifndef _LEXER_TOKEN_H
+#define _LEXER_TOKEN_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -50,12 +50,11 @@ typedef enum {
 
         /* Keywords */
         TK_PROC,
-        TK_RETURN,
-        TK_IF
+        TK_PUBLIC
 } token_kind_t;
 
 #define TF_NONE 0
-#define TF_EQUALS (1 << 0)
+#define TF_ASSIGNMENT (1 << 0)
 
 typedef struct {
         token_kind_t kind;
@@ -72,4 +71,4 @@ typedef struct {
         };
 } token_t;
 
-#endif /* _TOKEN_H */
+#endif /* !_LEXER_TOKEN_H */

@@ -3,8 +3,8 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
-#ifndef _CHAR_INFO_H
-#define _CHAR_INFO_H
+#ifndef _LEXER_CHAR_INFO_H
+#define _LEXER_CHAR_INFO_H
 
 #include <stdint.h>
 #include <lexer/token.h>
@@ -53,4 +53,4 @@
 
 extern uint16_t char_info[256];
 
-#endif /* _CHAR_INFO_H */
+#endif /* !_LEXER_CHAR_INFO_H */

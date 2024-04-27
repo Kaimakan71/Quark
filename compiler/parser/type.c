@@ -5,13 +5,12 @@
  */
 #include <stdlib.h>
 #include <string.h>
+#include <debug.h>
 #include <error.h>
 #include <hash.h>
 #include <parser/type.h>
 
-static ast_node_t* types;
-
-static void create_builtin_type(char* name, size_t bytes, uint8_t flags)
+static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uint8_t flags)
 {
         ast_node_t* type;
 
@@ -23,19 +22,19 @@ static void create_builtin_type(char* name, size_t bytes, uint8_t flags)
         type->name.hash = hash_data(name, type->name.length);
         type->bytes = bytes;
 
-        push_node(type, &types->children);
+        push_node(type, NULL);
 }
 
-ast_node_t* find_type(token_t* name)
+ast_node_t* init_types(void)
 {
-        return find_node(name, types);
-}
+        ast_node_t* types;
 
-void init_types()
-{
+        DEBUG("parser: Initializing types...");
+
         types = create_node(NULL);
-        types->kind = NK_UNKNOWN;
 
-        create_builtin_type("uint", 8, NF_NONE);
-        create_builtin_type("char", 1, NF_NONE);
+        create_builtin_type(types, "uint", 8, NF_NONE);
+        create_builtin_type(types, "char", 1, NF_NONE);
+
+        return types;
 }

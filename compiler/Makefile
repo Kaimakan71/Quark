@@ -2,15 +2,10 @@
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
 BINARY = quarkc
-OFILES = error.o hash.o lexer/char_info.o lexer/keyword.o lexer/lexer.o parser/ast.o parser/type.o parser/parser.o codegen/codegen.o main.o
+OFILES = error.o hash.o lexer/char_info.o lexer/keyword.o lexer/lexer.o parser/ast.o parser/type.o parser/parser.o main.o
 CFLAGS = -I include
 LDFLAGS =
 
-CC ?= cc
-LD ?= ld
-NASM ?= nasm
-
-TESTS_TARGET = linux
 TESTS_OFILES = tests/exit.o tests/write.o tests/file.o tests/if.o
 LIB_OFILES = ../lib/$(TESTS_TARGET)/entry.o ../lib/$(TESTS_TARGET)/system.o ../lib/string.o
 

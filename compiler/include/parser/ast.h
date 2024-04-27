@@ -3,8 +3,8 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
-#ifndef _AST_H
-#define _AST_H
+#ifndef _PARSER_AST_H
+#define _PARSER_AST_H
 
 #include <stdint.h>
 #include <name.h>
@@ -12,19 +12,7 @@
 
 typedef enum {
         NK_UNKNOWN,
-        NK_BUILTIN_TYPE,
-        NK_STRING,
-        NK_PROCEDURE,
-        NK_PARAMETER,
-        NK_LOCAL_VARIABLE,
-        NK_ASSIGNMENT,
-        NK_CALL,
-        NK_RETURN,
-        NK_IF,
-        NK_CONDITION,
-        NK_NUMBER,
-        NK_VARIABLE_REFERENCE,
-        NK_STRING_REFERENCE,
+        NK_BUILTIN_TYPE
 } node_kind_t;
 
 #define NF_NONE 0
@@ -57,6 +45,10 @@ typedef struct ast_node {
         size_t length;
         char* data;
 
+        /* Enumeration */
+        size_t n_values;
+        uint64_t* values;
+
         /* Fields only used by one kind of node */
         union {
                 size_t bytes;                 /* Builtin type */
@@ -79,4 +71,4 @@ void push_node(ast_node_t* node, ast_node_list_t* list);
 void delete_nodes(ast_node_t* top_node);
 ast_node_t* find_node(token_t* name, ast_node_t* parent);
 
-#endif /* _AST_H */
+#endif /* !_PARSER_AST_H */

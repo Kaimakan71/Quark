@@ -4,8 +4,6 @@
 OFILES = linux/entry.o linux/system.o hyra/entry.o hyra/system.o string.o
 NASMFLAGS = -f elf64
 
-NASM ?= nasm
-
 .PHONY: all clean
 
 all: $(OFILES)

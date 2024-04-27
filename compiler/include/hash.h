@@ -14,4 +14,4 @@
 
 uint32_t hash_data(void* data, size_t length);
 
-#endif /* _HASH_H */
+#endif /* !_HASH_H */

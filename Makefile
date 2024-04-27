@@ -2,8 +2,10 @@
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
 
-CC ?= cc
-LD ?= ld
+export CC ?= clang
+export LD ?= clang
+export NASM ?= nasm
+export TESTS_TARGET ?= linux
 
 .PHONY: all test clean
 

@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <codegen/codegen.h>
-#include <parser/parser.h>
+#include <parser.h>
+#include <parser/ast.h>
 
 typedef struct {
         char* name;
@@ -16,8 +16,8 @@ typedef struct {
         char** value;
 } param_t;
 
-char* input_filename = NULL;
-char* output_filename = NULL;
+static char* input_filename = NULL;
+static char* output_filename = NULL;
 
 static param_t params[] = {
         { "-i", "input filename", &input_filename },
@@ -90,22 +90,59 @@ static bool parse_args(int argc, char* argv[])
                 }
         }
 
+        if (input_filename == NULL || output_filename == NULL) {
+                fprintf(stderr, "Both an input and output filename must be set\n");
+                return false;
+        }
+
         return true;
+}
+
+static void print_tree(ast_node_t* root)
+{
+        ast_node_t* node;
+        int indent;
+
+        node = root->children.head;
+        indent = 0;
+        while (node != NULL) {
+                switch (node->kind) {
+                case NK_BUILTIN_TYPE:
+                        printf("Builtin type %.*s (%lu bytes)\n", node->name.length, node->name.string, node->bytes);
+                        break;
+                default:
+                        printf("Unknown\n");
+                        break;
+                }
+
+                if (node->children.head != NULL) {
+                        node = node->children.head;
+                        indent += 4;
+                        continue;
+                }
+
+                if (node->next != NULL) {
+                        node = node->next;
+                        continue;
+                }
+
+                if (node->parent != NULL && node->parent->next != NULL) {
+                        node = node->parent->next;
+                        indent -= 4;
+                        continue;
+                }
+
+                break;
+        }
 }
 
 int main(int argc, char* argv[])
 {
-        char* input;
         FILE* output_file;
-        ast_node_t* root;
-        ast_node_t* strings;
+        char* input;
+        parser_t* parser;
 
         if (!parse_args(argc, argv)) {
-                return -1;
-        }
-
-        if (input_filename == NULL || output_filename == NULL) {
-                fprintf(stderr, "Both an input and output filename must be set\n");
                 return -1;
         }
 
@@ -118,12 +155,24 @@ int main(int argc, char* argv[])
         input = load_text_file(input_filename);
         if (input == NULL) {
                 perror(input_filename);
+                fclose(output_file);
                 return -1;
         }
 
-        root = parse(input, &strings);
-        codegen(root, strings, output_file);
+        parser = create_parser(input);
+        if (parser == NULL) {
+                fclose(output_file);
+                free(input);
+                return -1;
+        }
 
+        parser_parse(parser);
+
+        print_tree(parser->types);
+
+        parser_destory(parser);
+
+        fclose(output_file);
         free(input);
         return 0;
 }

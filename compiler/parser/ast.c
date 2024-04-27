@@ -14,6 +14,7 @@ ast_node_t* create_node(ast_node_t* parent)
         ast_node_t* node;
 
         node = malloc(sizeof(ast_node_t));
+        node->kind = NK_UNKNOWN;
         node->flags = NF_NONE;
         node->parent = parent;
         node->children.head = NULL;
@@ -25,6 +26,10 @@ ast_node_t* create_node(ast_node_t* parent)
 
 void push_node(ast_node_t* node, ast_node_list_t* list)
 {
+        if (list == NULL) {
+                list = &node->parent->children;
+        }
+
         /* Add the node to the doubly linked list */
         if (list->head == NULL) {
                 node->prev = NULL;
@@ -58,7 +63,7 @@ void delete_nodes(ast_node_t* top_node)
                         continue;
                 }
 
-                if (node->parent != top_node && node->parent->next != NULL) {
+                if (node->parent != top_node && node->parent != NULL && node->parent->next != NULL) {
                         next = node->parent->next;
                         free(node);
                         node = next;
