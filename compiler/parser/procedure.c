@@ -6,6 +6,8 @@
 #include <error.h>
 #include <debug.h>
 #include <parser.h>
+#include <parser/procedure.h>
+#include <parser/statement.h>
 
 static ast_node_t* parse_variable(parser_t* parser, ast_node_t* parent)
 {
@@ -84,11 +86,6 @@ static bool parse_parameters(parser_t* parser, ast_node_t* parent)
         return true;
 }
 
-static bool parse_body(parser_t* parser, ast_node_t* parent)
-{
-        return true;
-}
-
 ast_node_t* parse_procedure(parser_t* parser, bool public)
 {
         ast_node_t* procedure;
@@ -143,7 +140,7 @@ ast_node_t* parse_procedure(parser_t* parser, bool public)
 
         /* Parse parameters, if any */
         if (next_token(parser)->kind != TK_RCURLY) {
-                if (!parse_body(parser, procedure)) {
+                if (!parse_statement_group(parser, procedure, procedure)) {
                         delete_nodes(procedure);
                         return NULL;
                 }

@@ -14,7 +14,9 @@ typedef enum {
         NK_UNKNOWN,
         NK_BUILTIN_TYPE,
         NK_PROCEDURE,
-        NK_PARAMETER
+        NK_PARAMETER,
+        NK_RETURN,
+        NK_NUMBER
 } node_kind_t;
 
 #define NF_NONE 0

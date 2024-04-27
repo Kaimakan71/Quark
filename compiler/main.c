@@ -118,6 +118,9 @@ static void print_tree(ast_node_t* root)
                 case NK_PARAMETER:
                         printf("Parameter %.*s (%.*s)\n", node->name.length, node->name.string, node->type->name.length, node->type->name.string);
                         break;
+                case NK_RETURN:
+                        printf("Return\n");
+                        break;
                 default:
                         printf("Unknown\n");
                         break;

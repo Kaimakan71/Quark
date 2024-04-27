@@ -65,4 +65,5 @@ void init_keywords()
         /* Add keywords to map */
         create_keyword("proc", TK_PROC);
         create_keyword("public", TK_PUBLIC);
+        create_keyword("return", TK_RETURN);
 }

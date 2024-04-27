@@ -50,7 +50,8 @@ typedef enum {
 
         /* Keywords */
         TK_PROC,
-        TK_PUBLIC
+        TK_PUBLIC,
+        TK_RETURN
 } token_kind_t;
 
 #define TF_NONE 0

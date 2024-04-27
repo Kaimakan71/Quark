@@ -1,5 +1,5 @@
 /*
- * AST node defintions & management.
+ * Parses procedure declarations.
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */

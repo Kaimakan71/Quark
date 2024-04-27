@@ -18,9 +18,9 @@ static void skip_whitespace(lexer_t* lexer)
                         lexer->pos++;
                         lexer->line++;
                         lexer->line_start = lexer->pos;
+                } else {
+                        lexer->pos++;
                 }
-
-                lexer->pos++;
         }
 }
 
