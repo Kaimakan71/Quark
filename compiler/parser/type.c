@@ -25,6 +25,33 @@ static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uin
         push_node(type, NULL);
 }
 
+ast_node_t* parse_type(parser_t* parser, ast_node_t* node)
+{
+        ast_node_t* type;
+        size_t pointer_depth;
+
+        if (parser->token.kind != TK_IDENTIFIER) {
+                error(&parser->token, "Expected type name\n");
+                return NULL;
+        }
+
+        type = find_node(&parser->token, parser->types);
+        if (type == NULL) {
+                error(&parser->token, "\"%.*s\" does not exist or is not a type\n", parser->token.length, parser->token.pos);
+                return NULL;
+        }
+
+        /* Find pointer depth */
+        pointer_depth = 0;
+        while (next_token(parser)->kind == TK_STAR) {
+                pointer_depth++;
+        }
+
+        node->type = type;
+        node->pointer_depth = pointer_depth;
+        return type;
+}
+
 ast_node_t* init_types(void)
 {
         ast_node_t* types;

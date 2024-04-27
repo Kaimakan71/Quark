@@ -121,6 +121,9 @@ static void print_tree(ast_node_t* root)
                 case NK_RETURN:
                         printf("Return\n");
                         break;
+                case NK_NUMBER:
+                        printf("Number 0x%lX\n", node->value);
+                        break;
                 default:
                         printf("Unknown\n");
                         break;

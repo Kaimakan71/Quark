@@ -19,10 +19,9 @@ typedef enum {
         NK_NUMBER
 } node_kind_t;
 
-#define NF_NONE 0
-#define NF_PUBLIC        (1 << 0)
-#define NF_NAMED         (1 << 1)
-#define NF_RETURNS_VALUE (1 << 2)
+#define NF_NONE   0
+#define NF_NAMED  (1 << 0)
+#define NF_PUBLIC (1 << 1)
 
 struct ast_node;
 

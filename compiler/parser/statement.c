@@ -19,7 +19,7 @@ static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t
 
         /* Allow returns with no value */
         if (next_token(parser)->kind == TK_SEMICOLON) {
-                if (procedure->flags & NF_RETURNS_VALUE) {
+                if (procedure->type != NULL) {
                         error(&parser->token, "Procedure \"%.*s\" must return a value\n", procedure->name.length, procedure->name.string);
                         delete_nodes(ret);
                         return NULL;
@@ -29,7 +29,7 @@ static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t
                 return ret;
         }
 
-        if (!(procedure->flags & NF_RETURNS_VALUE)) {
+        if (procedure->type == NULL) {
                 error(&parser->token, "Procedure \"%.*s\" does not have a return type\n", procedure->name.length, procedure->name.string);
                 delete_nodes(ret);
                 return NULL;

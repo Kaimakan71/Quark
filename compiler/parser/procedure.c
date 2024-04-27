@@ -6,49 +6,38 @@
 #include <error.h>
 #include <debug.h>
 #include <parser.h>
-#include <parser/procedure.h>
+#include <parser/type.h>
 #include <parser/statement.h>
+#include <parser/procedure.h>
 
 static ast_node_t* parse_variable(parser_t* parser, ast_node_t* parent)
 {
-        ast_node_t* type;
-        size_t pointer_depth;
         ast_node_t* variable;
 
         DEBUG("parser: Parsing variable declaration...");
 
-        if (parser->token.kind != TK_IDENTIFIER) {
-                error(&parser->token, "Expected type name\n");
+        /* Create variable and parse type*/
+        variable = create_node(parent);
+        variable->flags = NF_NAMED;
+        if (parse_type(parser, variable) == NULL) {
+                delete_nodes(variable);
                 return NULL;
-        }
-
-        type = find_node(&parser->token, parser->types);
-        if (type == NULL) {
-                error(&parser->token, "\"%.*s\" does not exist or is not a type\n", parser->token.length, parser->token.pos);
-                return NULL;
-        }
-
-        /* Find pointer depth */
-        pointer_depth = 0;
-        while (next_token(parser)->kind == TK_STAR) {
-                pointer_depth++;
         }
 
         if (parser->token.kind != TK_IDENTIFIER) {
                 error(&parser->token, "Type must be followed by a name\n");
+                delete_nodes(variable);
                 return NULL;
         }
 
         /* Prevent redeclaring a variable */
         if (find_node(&parser->token, parent) != NULL) {
                 error(&parser->token, "\"%.*s\" has already been declared\n", parser->token.length, parser->token.pos);
+                delete_nodes(variable);
                 return NULL;
         }
 
-        /* Create variable and set name */
-        variable = create_node(parent);
-        variable->flags = NF_NAMED;
-        variable->type = type;
+        /* Set variable name */
         variable->name.string = parser->token.pos;
         variable->name.length = parser->token.length;
         variable->name.hash = parser->token.hash;
@@ -122,6 +111,15 @@ ast_node_t* parse_procedure(parser_t* parser, bool public)
                 }
         } else {
                 next_token(parser);
+        }
+
+        /* Parse return type, if any */
+        if (parser->token.kind == TK_ARROW) {
+                next_token(parser);
+                if (parse_type(parser, procedure) == NULL) {
+                        delete_nodes(procedure);
+                        return NULL;
+                }
         }
 
         /* Procedure declarations are terminated with a ";" */

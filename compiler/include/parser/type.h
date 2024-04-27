@@ -6,9 +6,11 @@
 #ifndef _PARSER_TYPE_H
 #define _PARSER_TYPE_H
 
+#include <parser.h>
 #include <lexer/token.h>
 #include <parser/ast.h>
 
+ast_node_t* parse_type(parser_t* parser, ast_node_t* node);
 ast_node_t* init_types(void);
 
 #endif /* !_PARSER_TYPE_H */
