@@ -16,6 +16,8 @@ typedef enum {
         NK_PROCEDURE,
         NK_PARAMETER,
         NK_RETURN,
+        NK_IF,
+        NK_CONDITIONS,
         NK_NUMBER
 } node_kind_t;
 

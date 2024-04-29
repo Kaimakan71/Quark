@@ -124,6 +124,12 @@ static void print_tree(ast_node_t* root)
                 case NK_NUMBER:
                         printf("Number 0x%lX\n", node->value);
                         break;
+		case NK_IF:
+			printf("If\n");
+			break;
+		case NK_CONDITIONS:
+			printf("Conditions\n");
+			break;
                 default:
                         printf("Unknown\n");
                         break;
@@ -143,6 +149,12 @@ static void print_tree(ast_node_t* root)
                 if (node->parent != NULL && node->parent->next != NULL) {
                         node = node->parent->next;
                         indent -= 4;
+                        continue;
+                }
+
+                if (node->parent->parent != NULL && node->parent->parent->next != NULL) {
+                        node = node->parent->parent->next;
+                        indent -= 8;
                         continue;
                 }
 

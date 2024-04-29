@@ -136,7 +136,7 @@ ast_node_t* parse_procedure(parser_t* parser, bool public)
                 return NULL;
         }
 
-        /* Parse parameters, if any */
+        /* Parse body, if any */
         if (next_token(parser)->kind != TK_RCURLY) {
                 if (!parse_statement_group(parser, procedure, procedure)) {
                         delete_nodes(procedure);
@@ -146,14 +146,6 @@ ast_node_t* parse_procedure(parser_t* parser, bool public)
                 next_token(parser);
         }
 
-        /* Procedure body must end with a "}" */
-        if (parser->token.kind != TK_RCURLY) {
-                error(&parser->token, "Expected \"}\"\n");
-                delete_nodes(procedure);
-                return NULL;
-        }
-
         push_node(procedure, NULL);
-        next_token(parser);
         return procedure;
 }

@@ -66,4 +66,5 @@ void init_keywords()
         create_keyword("proc", TK_PROC);
         create_keyword("public", TK_PUBLIC);
         create_keyword("return", TK_RETURN);
+        create_keyword("if", TK_IF);
 }
