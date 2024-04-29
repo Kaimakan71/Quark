@@ -5,7 +5,7 @@
  */
 #include <error.h>
 #include <debug.h>
-#include <parser.h>
+#include <parser/value.h>
 #include <parser/statement.h>
 
 static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
@@ -35,20 +35,13 @@ static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t
                 return NULL;
         }
 
-        /* TODO: Support more kinds of values */
-        if (parser->token.kind != TK_NUMBER) {
-                error(&parser->token, "Expected number\n");
+	/* Parse return value */
+        if (parse_value(parser, ret) == NULL) {
                 delete_nodes(ret);
                 return NULL;
         }
-        ast_node_t* num = create_node(ret);
-        num->kind = NK_NUMBER;
-        num->value = parser->token.value;
-        push_node(num, NULL);
-        /* X */
 
         push_node(ret, NULL);
-        next_token(parser);
         return ret;
 }
 

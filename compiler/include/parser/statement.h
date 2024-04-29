@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include <parser.h>
+#include <parser/ast.h>
 
 ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* procedure);
 bool parse_statement_group(parser_t* parser, ast_node_t* parent, ast_node_t* procedure);

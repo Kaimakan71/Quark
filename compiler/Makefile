@@ -4,7 +4,7 @@
 BINARY = quarkc
 OFILES = error.o hash.o \
          lexer/char_info.o lexer/keyword.o lexer/lexer.o \
-	 parser/ast.o parser/type.o parser/statement.o parser/procedure.o parser/parser.o \
+	 parser/ast.o parser/type.o parser/value.o parser/statement.o parser/procedure.o parser/parser.o \
 	 main.o
 CFLAGS = -I include
 LDFLAGS =
