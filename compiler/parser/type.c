@@ -25,7 +25,69 @@ static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uin
         push_node(type, NULL);
 }
 
-ast_node_t* parse_type(parser_t* parser, ast_node_t* node)
+ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
+{
+        type->kind = NK_STRUCTURE;
+
+        DEBUG("parser: Parsing struct declaration...");
+
+        if (next_token(parser)->kind != TK_LCURLY) {
+                error(&parser->token, "Expected \"{\" after \"struct\"\n");
+                delete_nodes(type);
+                return NULL;
+        }
+
+        /* TODO: Struct members */
+
+        if (next_token(parser)->kind != TK_RCURLY) {
+                error(&parser->token, "Expected \"}\" after \"{\"\n");
+                delete_nodes(type);
+                return NULL;
+        }
+
+        push_node(type, NULL);
+        next_token(parser);
+        return type;
+}
+
+ast_node_t* parse_type_declaration(parser_t* parser, bool public)
+{
+        ast_node_t* type;
+
+        DEBUG("parser: Parsing type declaration...");
+
+        if (next_token(parser)->kind != TK_IDENTIFIER) {
+                error(&parser->token, "Expected type name after \"type\"\n");
+                return NULL;
+        }
+
+        /* Create type and set name */
+        type = create_node(parser->types);
+        type->flags = NF_NAMED;
+        type->name.string = parser->token.pos;
+        type->name.length = parser->token.length;
+        type->name.hash = parser->token.hash;
+        if (public) {
+                type->flags |= NF_PUBLIC;
+        }
+
+        if (next_token(parser)->kind != TK_COLON) {
+                error(&parser->token, "Expected \":\" after type name\n");
+                delete_nodes(type);
+                return NULL;
+        }
+
+        /* TODO: Support more kinds of types */
+        if (next_token(parser)->kind != TK_STRUCT) {
+                error(&parser->token, "Expected \"struct\" after \":\"\n");
+                delete_nodes(type);
+                return NULL;
+        }
+
+        return parse_struct_declaration(parser, type);
+}
+
+ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node)
 {
         ast_node_t* type;
         size_t pointer_depth;

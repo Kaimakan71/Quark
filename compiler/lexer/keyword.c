@@ -67,4 +67,6 @@ void init_keywords()
         create_keyword("public", TK_PUBLIC);
         create_keyword("return", TK_RETURN);
         create_keyword("if", TK_IF);
+        create_keyword("type", TK_TYPE);
+        create_keyword("struct", TK_STRUCT);
 }

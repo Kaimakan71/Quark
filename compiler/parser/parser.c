@@ -19,6 +19,8 @@ static ast_node_t* parse_public(parser_t* parser)
 
         if (parser->token.kind == TK_PROC) {
                 return parse_procedure(parser, true);
+        } else if (parser->token.kind == TK_TYPE) {
+                return parse_type_declaration(parser, true);
         }
 
         error(&parser->token, "Expected \"proc\" after \"public\"\n");
@@ -47,6 +49,8 @@ void parser_parse(parser_t* parser)
                         parse_public(parser);
                 } else if (parser->token.kind == TK_PROC) {
                         parse_procedure(parser, false);
+                } else if (parser->token.kind == TK_TYPE) {
+                        parse_type_declaration(parser, false);
                 } else {
                         error(&parser->token, "Unexpected \"%.*s\"\n", parser->token.length, parser->token.pos);
                         break;

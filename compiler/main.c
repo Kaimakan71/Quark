@@ -20,6 +20,18 @@ typedef struct {
 static char* input_filename = NULL;
 static char* output_filename = NULL;
 
+static const char* node_kind_strings[] = {
+        [NK_UNKNOWN] = "Unknown",
+        [NK_BUILTIN_TYPE] = "Type",
+        [NK_STRUCTURE] = "Structure",
+        [NK_PROCEDURE] = "Procedure",
+        [NK_PARAMETER] = "Parameter",
+        [NK_RETURN] = "Return",
+        [NK_IF] = "If",
+        [NK_CONDITIONS] = "Conditions",
+        [NK_NUMBER] = "Number"
+};
+
 static param_t params[] = {
         { "-i", "input filename", &input_filename },
         { "-o", "output filename", &output_filename }
@@ -107,34 +119,28 @@ static void print_tree(ast_node_t* root)
         node = root->children.head;
         indent = 0;
         while (node != NULL) {
-                printf("%*s", indent, "");
+                printf("%*s %s ", indent, "", node_kind_strings[node->kind]);
+
+                if (node->flags & NF_NAMED) {
+                        printf("%.*s ", node->name.length, node->name.string);
+                }
 
                 switch (node->kind) {
                 case NK_BUILTIN_TYPE:
-                        printf("Builtin type %.*s (%lu bytes)\n", node->name.length, node->name.string, node->bytes);
+                        printf("(%lu bytes)", node->bytes);
                         break;
                 case NK_PROCEDURE:
-                        printf("Procedure %.*s (%s)\n", node->name.length, node->name.string, node->flags & NF_PUBLIC ? "public":"private");
+                        printf("(%s)", node->flags & NF_PUBLIC ? "public":"private");
                         break;
                 case NK_PARAMETER:
-                        printf("Parameter %.*s (%.*s)\n", node->name.length, node->name.string, node->type->name.length, node->type->name.string);
-                        break;
-                case NK_RETURN:
-                        printf("Return\n");
+                        printf("(%.*s)", node->type->name.length, node->type->name.string);
                         break;
                 case NK_NUMBER:
-                        printf("Number 0x%lX\n", node->value);
-                        break;
-                case NK_IF:
-                        printf("If\n");
-                        break;
-                case NK_CONDITIONS:
-                        printf("Conditions\n");
-                        break;
-                default:
-                        printf("Unknown\n");
+                        printf("%lx", node->value);
                         break;
                 }
+
+                printf("\n");
 
                 if (node->children.head != NULL) {
                         node = node->children.head;

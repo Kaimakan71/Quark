@@ -16,16 +16,16 @@ static ast_node_t* parse_variable(parser_t* parser, ast_node_t* parent)
 
         DEBUG("parser: Parsing variable declaration...");
 
-        /* Create variable and parse type*/
+        /* Create variable and parse type */
         variable = create_node(parent);
         variable->flags = NF_NAMED;
-        if (parse_type(parser, variable) == NULL) {
+        if (parse_type_reference(parser, variable) == NULL) {
                 delete_nodes(variable);
                 return NULL;
         }
 
         if (parser->token.kind != TK_IDENTIFIER) {
-                error(&parser->token, "Type must be followed by a name\n");
+                error(&parser->token, "Expected name after type\n");
                 delete_nodes(variable);
                 return NULL;
         }
@@ -116,7 +116,7 @@ ast_node_t* parse_procedure(parser_t* parser, bool public)
         /* Parse return type, if any */
         if (parser->token.kind == TK_ARROW) {
                 next_token(parser);
-                if (parse_type(parser, procedure) == NULL) {
+                if (parse_type_reference(parser, procedure) == NULL) {
                         delete_nodes(procedure);
                         return NULL;
                 }

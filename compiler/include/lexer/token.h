@@ -52,7 +52,9 @@ typedef enum {
         TK_PROC,
         TK_PUBLIC,
         TK_RETURN,
-        TK_IF
+        TK_IF,
+        TK_TYPE,
+        TK_STRUCT
 } token_kind_t;
 
 #define TF_NONE 0

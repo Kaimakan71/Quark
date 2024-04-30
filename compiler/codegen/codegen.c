@@ -8,20 +8,20 @@
 
 static void generate_value(ast_node_t* value, FILE* out)
 {
-	if (value->kind == NK_NUMBER) {
-		if (value->value == 0) {
-			fprintf(out, "\txorq %%rax, %%rax\n");
-		} else {
-			fprintf(out, "\tmovq $%lx, %%rax\n", value->value);
-		}
-	}
+        if (value->kind == NK_NUMBER) {
+                if (value->value == 0) {
+                        fprintf(out, "\txorq %%rax, %%rax\n");
+                } else {
+                        fprintf(out, "\tmovq $%lx, %%rax\n", value->value);
+                }
+        }
 }
 
 static void generate_return(ast_node_t* statement, FILE* out)
 {
-	if (statement->children.head != NULL) {
-		generate_value(statement->children.head, out);
-	}
+        if (statement->children.head != NULL) {
+                generate_value(statement->children.head, out);
+        }
 
         fprintf(out, "\tretq\n");
 }
