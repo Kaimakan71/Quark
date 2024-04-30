@@ -35,7 +35,7 @@ static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t
                 return NULL;
         }
 
-	/* Parse return value */
+        /* Parse return value */
         if (parse_value(parser, statement) == NULL) {
                 delete_nodes(statement);
                 return NULL;
@@ -133,6 +133,6 @@ bool parse_statement_group(parser_t* parser, ast_node_t* parent, ast_node_t* pro
                 }
         }
 
-	next_token(parser);
+        next_token(parser);
         return true;
 }

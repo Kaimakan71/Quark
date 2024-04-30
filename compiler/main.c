@@ -9,6 +9,7 @@
 #include <string.h>
 #include <parser.h>
 #include <parser/ast.h>
+#include <codegen.h>
 
 typedef struct {
         char* name;
@@ -124,12 +125,12 @@ static void print_tree(ast_node_t* root)
                 case NK_NUMBER:
                         printf("Number 0x%lX\n", node->value);
                         break;
-		case NK_IF:
-			printf("If\n");
-			break;
-		case NK_CONDITIONS:
-			printf("Conditions\n");
-			break;
+                case NK_IF:
+                        printf("If\n");
+                        break;
+                case NK_CONDITIONS:
+                        printf("Conditions\n");
+                        break;
                 default:
                         printf("Unknown\n");
                         break;
@@ -196,6 +197,10 @@ int main(int argc, char* argv[])
 
         print_tree(parser->types);
         print_tree(parser->procedures);
+
+        if (!codegen(parser, output_file)) {
+                fprintf(stderr, "Error encountered while generating output\n");
+        }
 
         parser_destory(parser);
 

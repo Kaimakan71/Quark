@@ -6,9 +6,10 @@
 #ifndef _CODEGEN_H
 #define _CODEGEN_H
 
+#include <stdbool.h>
 #include <stdio.h>
-#include <parser/ast.h>
+#include <parser.h>
 
-void codegen(ast_node_t* root, ast_node_t* strings, FILE* out);
+bool codegen(parser_t* parser, FILE* out);
 
 #endif /* !_CODEGEN_H */
