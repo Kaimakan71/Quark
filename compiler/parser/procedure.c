@@ -9,42 +9,7 @@
 #include <parser/type.h>
 #include <parser/statement.h>
 #include <parser/procedure.h>
-
-static ast_node_t* parse_variable(parser_t* parser, ast_node_t* parent)
-{
-        ast_node_t* variable;
-
-        DEBUG("parser: Parsing variable declaration...");
-
-        /* Create variable and parse type */
-        variable = create_node(parent);
-        variable->flags = NF_NAMED;
-        if (parse_type_reference(parser, variable) == NULL) {
-                delete_nodes(variable);
-                return NULL;
-        }
-
-        if (parser->token.kind != TK_IDENTIFIER) {
-                error(&parser->token, "Expected name after type\n");
-                delete_nodes(variable);
-                return NULL;
-        }
-
-        /* Prevent redeclaring a variable */
-        if (find_node(&parser->token, parent) != NULL) {
-                error(&parser->token, "\"%.*s\" has already been declared\n", parser->token.length, parser->token.pos);
-                delete_nodes(variable);
-                return NULL;
-        }
-
-        /* Set variable name */
-        variable->name.string = parser->token.pos;
-        variable->name.length = parser->token.length;
-        variable->name.hash = parser->token.hash;
-
-        next_token(parser);
-        return variable;
-}
+#include <parser/storage.h>
 
 static bool parse_parameters(parser_t* parser, ast_node_t* parent)
 {
@@ -53,7 +18,7 @@ static bool parse_parameters(parser_t* parser, ast_node_t* parent)
         while (parser->token.kind != TK_RPAREN) {
                 ast_node_t* parameter;
 
-                parameter = parse_variable(parser, parent);
+                parameter = parse_storage(parser, parent);
                 if (parameter == NULL) {
                         return false;
                 }

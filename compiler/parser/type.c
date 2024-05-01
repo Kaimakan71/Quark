@@ -9,6 +9,7 @@
 #include <error.h>
 #include <hash.h>
 #include <parser/type.h>
+#include <parser/storage.h>
 
 static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uint8_t flags)
 {
@@ -25,7 +26,34 @@ static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uin
         push_node(type, NULL);
 }
 
-ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
+static bool parse_struct_members(parser_t* parser, ast_node_t* type)
+{
+        DEBUG("parser: Parsing struct members...");
+
+        while (parser->token.kind != TK_RCURLY) {
+                ast_node_t* member;
+
+                member = parse_storage(parser, type);
+                if (member == NULL) {
+                        return false;
+                }
+
+                if (parser->token.kind != TK_SEMICOLON) {
+                        error(&parser->token, "Expected \";\"\n");
+                        delete_nodes(member);
+                        return false;
+                }
+
+                member->kind = NK_STRUCTURE_MEMBER;
+                push_node(member, NULL);
+                next_token(parser);
+        }
+
+        next_token(parser);
+        return true;
+}
+
+static ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
 {
         type->kind = NK_STRUCTURE;
 
@@ -37,16 +65,17 @@ ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
                 return NULL;
         }
 
-        /* TODO: Struct members */
-
+        /* Parse struct members */
         if (next_token(parser)->kind != TK_RCURLY) {
-                error(&parser->token, "Expected \"}\" after \"{\"\n");
-                delete_nodes(type);
-                return NULL;
+                if (!parse_struct_members(parser, type)) {
+                        delete_nodes(type);
+                        return NULL;
+                }
+        } else {
+                next_token(parser);
         }
 
         push_node(type, NULL);
-        next_token(parser);
         return type;
 }
 
