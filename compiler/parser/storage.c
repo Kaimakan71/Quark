@@ -44,3 +44,30 @@ ast_node_t* parse_storage(parser_t* parser, ast_node_t* parent)
         return variable;
 }
 
+ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
+{
+        ast_node_t* variable;
+
+        DEBUG("parser: Parsing local variable declaration...");
+
+        variable = parse_storage(parser, parent);
+        if (variable == NULL) {
+                return NULL;
+        }
+
+        /* TODO: Initialized local variables */
+
+        if (parser->token.kind != TK_SEMICOLON) {
+                error(&parser->token, "Expected \";\" after variable declaration\n");
+                delete_nodes(variable);
+                return NULL;
+        }
+
+        variable->kind = NK_LOCAL_VARIABLE;
+        variable->local_offset = procedure->local_size;
+        procedure->local_size += variable->type->bytes;
+
+        push_node(variable, NULL);
+        next_token(parser);
+        return variable;
+}

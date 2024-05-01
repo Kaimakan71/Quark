@@ -7,6 +7,7 @@
 #include <debug.h>
 #include <parser/value.h>
 #include <parser/statement.h>
+#include <parser/storage.h>
 
 static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
@@ -114,9 +115,11 @@ ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* pr
                 return parse_return(parser, parent, procedure);
         } else if (parser->token.kind == TK_IF) {
                 return parse_if(parser, parent, procedure);
+        } else if (parser->token.kind == TK_IDENTIFIER) {
+                return parse_local_declaration(parser, parent, procedure);
         }
 
-        error(&parser->token, "Expected \"return\" or \"if\"\n");
+        error(&parser->token, "Expected \"return\", \"if\" or type name\n");
         return NULL;
 }
 

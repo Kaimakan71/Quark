@@ -20,6 +20,7 @@ typedef enum {
         NK_RETURN,
         NK_IF,
         NK_CONDITIONS,
+        NK_LOCAL_VARIABLE,
         NK_NUMBER
 } node_kind_t;
 
