@@ -21,6 +21,7 @@ typedef enum {
         NK_IF,
         NK_CONDITIONS,
         NK_LOCAL_VARIABLE,
+        NK_VARIABLE_REFERENCE,
         NK_NUMBER
 } node_kind_t;
 

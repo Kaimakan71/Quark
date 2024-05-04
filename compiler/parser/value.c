@@ -6,6 +6,7 @@
 #include <error.h>
 #include <debug.h>
 #include <parser/value.h>
+#include <parser/storage.h>
 
 ast_node_t* parse_value(parser_t* parser, ast_node_t* parent)
 {
@@ -21,6 +22,10 @@ ast_node_t* parse_value(parser_t* parser, ast_node_t* parent)
 
                 next_token(parser);
                 return number;
+        }
+
+        if (parser->token.kind == TK_IDENTIFIER) {
+                return parse_variable_reference(parser, parent);
         }
 
         error(&parser->token, "Expected number\n");

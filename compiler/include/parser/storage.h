@@ -10,6 +10,7 @@
 #include <parser/ast.h>
 
 ast_node_t* parse_storage(parser_t* parser, ast_node_t* parent);
+ast_node_t* parse_variable_reference(parser_t* parser, ast_node_t* parent);
 ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_node_t* procedure);
 
 #endif /* !_PARSER_STORAGE_H */

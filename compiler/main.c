@@ -31,6 +31,7 @@ static const char* node_kind_strings[] = {
         [NK_IF] = "If",
         [NK_CONDITIONS] = "Conditions",
         [NK_LOCAL_VARIABLE] = "Local variable",
+        [NK_VARIABLE_REFERENCE] = "Variable reference",
         [NK_NUMBER] = "Number"
 };
 
@@ -141,6 +142,9 @@ static void print_tree(ast_node_t* root)
                         break;
                 case NK_NUMBER:
                         printf("%lx", node->value);
+                        break;
+                case NK_VARIABLE_REFERENCE:
+                        printf("to %.*s", node->variable->name.length, node->variable->name.string);
                         break;
                 }
 

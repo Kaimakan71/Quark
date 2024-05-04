@@ -44,6 +44,28 @@ ast_node_t* parse_storage(parser_t* parser, ast_node_t* parent)
         return variable;
 }
 
+ast_node_t* parse_variable_reference(parser_t* parser, ast_node_t* parent)
+{
+        ast_node_t* reference;
+        ast_node_t* variable;
+
+        variable = find_node(&parser->token, parent);
+        if (variable == NULL || variable->kind != NK_LOCAL_VARIABLE) {
+                error(&parser->token, "\"%.*s\" does not exist or is not a variable\n", parser->token.length, parser->token.pos);
+                return NULL;
+        }
+
+        /* TODO: Struct and enum member references */
+
+        reference = create_node(parent);
+        reference->kind = NK_VARIABLE_REFERENCE;
+        reference->variable = variable;
+
+        push_node(reference, NULL);
+        next_token(parser);
+        return reference;
+}
+
 ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
         ast_node_t* variable;

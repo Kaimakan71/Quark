@@ -119,7 +119,7 @@ ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* pr
                 return parse_local_declaration(parser, parent, procedure);
         }
 
-        error(&parser->token, "Expected \"return\", \"if\" or type name\n");
+        error(&parser->token, "Expected \"return\", \"if\", or type name\n");
         return NULL;
 }
 
