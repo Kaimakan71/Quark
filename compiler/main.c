@@ -23,8 +23,8 @@ static char* output_filename = NULL;
 static const char* node_kind_strings[] = {
         [NK_UNKNOWN] = "Unknown",
         [NK_BUILTIN_TYPE] = "Type",
-        [NK_STRUCTURE] = "Structure",
-        [NK_STRUCTURE_MEMBER] = "Structure member",
+        [NK_STRUCT] = "Struct",
+        [NK_STRUCT_MEMBER] = "Struct member",
         [NK_PROCEDURE] = "Procedure",
         [NK_PARAMETER] = "Parameter",
         [NK_RETURN] = "Return",
@@ -136,7 +136,7 @@ static void print_tree(ast_node_t* root)
                         printf("(%s)", node->flags & NF_PUBLIC ? "public":"private");
                         break;
                 case NK_PARAMETER:
-                case NK_STRUCTURE_MEMBER:
+                case NK_STRUCT_MEMBER:
                 case NK_LOCAL_VARIABLE:
                         printf("(%.*s)", node->type->name.length, node->type->name.string);
                         break;

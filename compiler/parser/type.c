@@ -44,7 +44,7 @@ static bool parse_struct_members(parser_t* parser, ast_node_t* type)
                         return false;
                 }
 
-                member->kind = NK_STRUCTURE_MEMBER;
+                member->kind = NK_STRUCT_MEMBER;
                 push_node(member, NULL);
                 next_token(parser);
         }
@@ -55,7 +55,7 @@ static bool parse_struct_members(parser_t* parser, ast_node_t* type)
 
 static ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
 {
-        type->kind = NK_STRUCTURE;
+        type->kind = NK_STRUCT;
 
         DEBUG("parser: Parsing struct declaration...");
 

@@ -8,7 +8,7 @@ Run `make clean` to delete all binaries, except for `quarkc` (the compiler).
 Run `make test` to run compiler tests (which are in the `test` directory).
 
 # Usage
-`./compiler/quarkc -i filename.quark -o filename.S`. This will generate assembly code from the quark source code. If you want to assemble the program, you can use clang `clang filename.S -o filename`.
+`./compiler/quarkc -i filename.quark -o filename.asm`. This will generate assembly code from the quark source code. If you want to assemble the program, you can use NASM `nasm filename.asm -f elf64 -o filename.o`.
 
 # TODO
 * Expression/condition parsing

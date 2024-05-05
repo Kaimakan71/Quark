@@ -12,14 +12,17 @@
 
 typedef enum {
         NK_UNKNOWN,
+
         NK_BUILTIN_TYPE,
-        NK_STRUCTURE,
-        NK_STRUCTURE_MEMBER,
+        NK_STRUCT,
+        NK_STRUCT_MEMBER,
+
         NK_PROCEDURE,
         NK_PARAMETER,
         NK_RETURN,
         NK_IF,
         NK_CONDITIONS,
+
         NK_LOCAL_VARIABLE,
         NK_VARIABLE_REFERENCE,
         NK_NUMBER
