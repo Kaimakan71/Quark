@@ -47,10 +47,10 @@ static void generate_value(codegen_t* generator, ast_node_t* value, uint8_t byte
         }
 }
 
-static void generate_return(codegen_t* generator, ast_node_t* statement, uint8_t value_bytes)
+static void generate_return(codegen_t* generator, ast_node_t* statement)
 {
         if (statement != NULL && statement->children.head != NULL) {
-                generate_value(generator, statement->children.head, value_bytes);
+                generate_value(generator, statement->children.head, statement->type->bytes);
         }
 
         fprintf(generator->out, "\tpop %s\n\tret\n", get_reg_name(REG_STACK_BASE, generator->bytes));
@@ -75,7 +75,7 @@ static void generate_statements(codegen_t* generator, ast_node_t* statements)
         statement = statements->children.head;
         while (statement != NULL) {
                 if (statement->kind == NK_RETURN) {
-                        generate_return(generator, statement, generator->bytes);
+                        generate_return(generator, statement);
                 }
 
                 statement = statement->next;
@@ -98,7 +98,7 @@ static void generate_procedure(codegen_t* generator, ast_node_t* procedure)
 
         /* Generate return if needed */
         if (procedure->children.tail == NULL || procedure->children.tail->kind != NK_RETURN) {
-                generate_return(generator, NULL, 0);
+                generate_return(generator, NULL);
         }
 }
 

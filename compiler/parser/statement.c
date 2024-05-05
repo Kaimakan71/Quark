@@ -17,6 +17,7 @@ static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t
 
         statement = create_node(parent);
         statement->kind = NK_RETURN;
+        statement->type = procedure->type;
 
         /* Allow returns with no value */
         if (next_token(parser)->kind == TK_SEMICOLON) {
