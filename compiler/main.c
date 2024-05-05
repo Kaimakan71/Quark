@@ -179,16 +179,15 @@ static void print_tree(ast_node_t* root)
 
 int main(int argc, char* argv[])
 {
-        FILE* output_file;
         char* input;
-        parser_t* parser;
+        codegen_t generator;
 
         if (!parse_args(argc, argv)) {
                 return -1;
         }
 
-        output_file = fopen(output_filename, "w");
-        if (output_file == NULL) {
+        generator.out = fopen(output_filename, "w");
+        if (generator.out == NULL) {
                 perror(output_filename);
                 return -1;
         }
@@ -196,29 +195,30 @@ int main(int argc, char* argv[])
         input = load_text_file(input_filename);
         if (input == NULL) {
                 perror(input_filename);
-                fclose(output_file);
+                fclose(generator.out);
                 return -1;
         }
 
-        parser = create_parser(input);
-        if (parser == NULL) {
-                fclose(output_file);
+        generator.parser = create_parser(input);
+        if (generator.parser == NULL) {
+                fclose(generator.out);
                 free(input);
                 return -1;
         }
 
-        parser_parse(parser);
+        parser_parse(generator.parser);
 
-        print_tree(parser->types);
-        print_tree(parser->procedures);
+        print_tree(generator.parser->types);
+        print_tree(generator.parser->procedures);
 
-        if (!codegen(parser, output_file)) {
+        generator.bytes = 8;
+        if (!codegen(&generator)) {
                 fprintf(stderr, "Error encountered while generating output\n");
         }
 
-        parser_destory(parser);
+        parser_destory(generator.parser);
 
-        fclose(output_file);
+        fclose(generator.out);
         free(input);
         return 0;
 }

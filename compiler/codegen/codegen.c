@@ -6,27 +6,67 @@
 #include <debug.h>
 #include <codegen.h>
 
-static void generate_value(ast_node_t* value, FILE* out)
+typedef enum {
+        REG_ACCUMULATOR = 0,
+        REG_BASE,
+        REG_COUNTER,
+        REG_DATA,
+        REG_STACK,
+        REG_STACK_BASE,
+        REG_DESTINATION,
+        REG_SOURCE
+} reg_id_t;
+
+static char* reg_names[][4] = {
+        [REG_ACCUMULATOR] = { "al", "ax", "eax", "rax" },
+        [REG_BASE]        = { "bl", "bx", "ebx", "rbx" },
+        [REG_COUNTER]     = { "cl", "cx", "ecx", "rcx" },
+        [REG_DATA]        = { "dl", "dx", "edx", "rdx" },
+        [REG_STACK]       = { "spl", "sp", "esp", "rsp" },
+        [REG_STACK_BASE]  = { "bpl", "bp", "ebp", "rbp" },
+        [REG_DESTINATION] = { "dil", "di", "edi", "rdi" },
+        [REG_SOURCE]      = { "sil", "si", "esi", "rsi" }
+};
+
+static inline char* get_reg_name(reg_id_t id, uint8_t bytes)
+{
+        return reg_names[id][__builtin_ctz(bytes)];
+}
+
+static void generate_value(codegen_t* generator, ast_node_t* value, uint8_t bytes)
 {
         if (value->kind == NK_NUMBER) {
+                char* accumulator;
+
+                accumulator = get_reg_name(REG_ACCUMULATOR, bytes);
                 if (value->value == 0) {
-                        fprintf(out, "\txor rax, rax\n");
+                        fprintf(generator->out, "\txor %s, %s\n", accumulator, accumulator);
                 } else {
-                        fprintf(out, "\tmov rax, %lx\n", value->value);
+                        fprintf(generator->out, "\tmov %s, %lx\n", accumulator, value->value);
                 }
         }
 }
 
-static void generate_return(ast_node_t* statement, FILE* out)
+static void generate_return(codegen_t* generator, ast_node_t* statement, uint8_t value_bytes)
 {
-        if (statement->children.head != NULL) {
-                generate_value(statement->children.head, out);
+        if (statement != NULL && statement->children.head != NULL) {
+                generate_value(generator, statement->children.head, value_bytes);
         }
 
-        fprintf(out, "\tpop rbp\n\tret\n");
+        fprintf(generator->out, "\tpop %s\n\tret\n", get_reg_name(REG_STACK_BASE, generator->bytes));
 }
 
-static void generate_statements(ast_node_t* statements, FILE* out)
+static void generate_prologue(codegen_t* generator, ast_node_t* procedure)
+{
+        char* stack;
+        char* stack_base;
+
+        stack = get_reg_name(REG_STACK, generator->bytes);
+        stack_base = get_reg_name(REG_STACK_BASE, generator->bytes);
+        fprintf(generator->out, "\tpush %s\n\tmov %s, %s\n", stack_base, stack_base, stack);
+}
+
+static void generate_statements(codegen_t* generator, ast_node_t* statements)
 {
         ast_node_t* statement;
 
@@ -35,33 +75,34 @@ static void generate_statements(ast_node_t* statements, FILE* out)
         statement = statements->children.head;
         while (statement != NULL) {
                 if (statement->kind == NK_RETURN) {
-                        generate_return(statement, out);
+                        generate_return(generator, statement, generator->bytes);
                 }
 
                 statement = statement->next;
         }
 }
 
-static void generate_procedure(ast_node_t* procedure, FILE* out)
+static void generate_procedure(codegen_t* generator, ast_node_t* procedure)
 {
         DEBUG("Generating procedure...");
 
-        fprintf(out, "\tglobal %.*s\n", procedure->name.length, procedure->name.string);
-        fprintf(out, "\talign 16\n");
-        fprintf(out, "%.*s:\n", procedure->name.length, procedure->name.string);
-        fprintf(out, "\tpush rbp\n\tmov rbp, rsp\n");
+        fprintf(generator->out, "\tglobal %.*s\n", procedure->name.length, procedure->name.string);
+        fprintf(generator->out, "\talign 16\n");
+        fprintf(generator->out, "%.*s:\n", procedure->name.length, procedure->name.string);
+
+        generate_prologue(generator, procedure);
 
         if (procedure->children.head != NULL) {
-                generate_statements(procedure, out);
+                generate_statements(generator, procedure);
         }
 
         /* Generate return if needed */
         if (procedure->children.tail == NULL || procedure->children.tail->kind != NK_RETURN) {
-                generate_return(NULL, out);
+                generate_return(generator, NULL, 0);
         }
 }
 
-static void generate_procedures(ast_node_t* procedures, FILE* out)
+static void generate_procedures(codegen_t* generator, ast_node_t* procedures)
 {
         ast_node_t* procedure;
 
@@ -71,24 +112,24 @@ static void generate_procedures(ast_node_t* procedures, FILE* out)
                 return;
         }
 
-        fprintf(out, "\tsection .text\n\n");
+        fprintf(generator->out, "\tsection .text\n\n");
         procedure = procedures->children.head;
         while (procedure != NULL) {
                 if (procedure->children.head != NULL) {
-                        generate_procedure(procedure, out);
+                        generate_procedure(generator, procedure);
                 } else {
-                        fprintf(out, "extern %.*s\n\n", procedure->name.length, procedure->name.string);
+                        fprintf(generator->out, "extern %.*s\n\n", procedure->name.length, procedure->name.string);
                 }
 
                 procedure = procedure->next;
         }
 }
 
-bool codegen(parser_t* parser, FILE* out)
+bool codegen(codegen_t* generator)
 {
         DEBUG("Generating assembly...");
 
-        generate_procedures(parser->procedures, out);
+        generate_procedures(generator, generator->parser->procedures);
 
         return true;
 }

@@ -10,6 +10,12 @@
 #include <stdio.h>
 #include <parser.h>
 
-bool codegen(parser_t* parser, FILE* out);
+typedef struct {
+        parser_t* parser;
+        size_t bytes;
+        FILE* out;
+} codegen_t;
+
+bool codegen(codegen_t* generator);
 
 #endif /* !_CODEGEN_H */
