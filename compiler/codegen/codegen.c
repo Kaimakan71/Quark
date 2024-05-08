@@ -35,15 +35,29 @@ static inline char* get_reg_name(reg_id_t id, uint8_t bytes)
 
 static void generate_value(codegen_t* generator, ast_node_t* value, uint8_t bytes)
 {
-        if (value->kind == NK_NUMBER) {
-                char* accumulator;
+        char* accumulator;
 
+        if (value->kind == NK_NUMBER) {
                 accumulator = get_reg_name(REG_ACCUMULATOR, bytes);
+
                 if (value->value == 0) {
                         fprintf(generator->out, "\txor %s, %s\n", accumulator, accumulator);
                 } else {
                         fprintf(generator->out, "\tmov %s, %lx\n", accumulator, value->value);
                 }
+
+                return;
+        }
+
+        if (value->kind == NK_VARIABLE_REFERENCE) {
+                char* stack_base;
+
+                accumulator = get_reg_name(REG_ACCUMULATOR, value->variable->type->bytes);
+                stack_base = get_reg_name(REG_STACK_BASE, generator->bytes);
+
+                fprintf(generator->out, "\tmov %s, [%s - %lx]\n", accumulator, stack_base, value->variable->local_offset);
+
+                return;
         }
 }
 
@@ -64,6 +78,10 @@ static void generate_prologue(codegen_t* generator, ast_node_t* procedure)
         stack = get_reg_name(REG_STACK, generator->bytes);
         stack_base = get_reg_name(REG_STACK_BASE, generator->bytes);
         fprintf(generator->out, "\tpush %s\n\tmov %s, %s\n", stack_base, stack_base, stack);
+
+        if (procedure->local_size > 0) {
+                fprintf(generator->out, "\tsub %s, %lx\n", stack, procedure->local_size);
+        }
 }
 
 static void generate_statements(codegen_t* generator, ast_node_t* statements)

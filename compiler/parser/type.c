@@ -30,6 +30,7 @@ static bool parse_struct_members(parser_t* parser, ast_node_t* type)
 {
         DEBUG("parser: Parsing struct members...");
 
+        type->bytes = 0;
         while (parser->token.kind != TK_RCURLY) {
                 ast_node_t* member;
 
@@ -47,6 +48,8 @@ static bool parse_struct_members(parser_t* parser, ast_node_t* type)
                 member->kind = NK_STRUCT_MEMBER;
                 push_node(member, NULL);
                 next_token(parser);
+
+                type->bytes += member->bytes;
         }
 
         next_token(parser);
@@ -164,6 +167,13 @@ ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node)
 
         node->type = type;
         node->pointer_depth = pointer_depth;
+
+        if (node->pointer_depth > 0) {
+                node->bytes = 8;
+        } else {
+                node->bytes = node->type->bytes;
+        }
+
         return type;
 }
 

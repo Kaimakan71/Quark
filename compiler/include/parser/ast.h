@@ -45,6 +45,9 @@ typedef struct ast_node {
         uint8_t flags;
         name_t name;
 
+        /* Builtin type, struct, storage */
+        size_t bytes;
+
         /* Procedure */
         int n_parameters;
         ast_node_list_t parameters;
@@ -65,8 +68,7 @@ typedef struct ast_node {
 
         /* Fields only used by one kind of node */
         union {
-                size_t bytes;                 /* Builtin type */
-                int local_offset;             /* Local variable */
+                size_t local_offset;          /* Local variable */
                 struct ast_node* destination; /* Assignment */
                 struct ast_node* callee;      /* Call */
                 uint64_t value;               /* Number */
