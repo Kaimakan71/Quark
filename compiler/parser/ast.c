@@ -49,30 +49,27 @@ void delete_nodes(ast_node_t* top_node)
 
         node = top_node;
         while (node != NULL) {
-                /* TODO: Free procedure parameters */
-
-                if (node->children.head != NULL) {
-                        next = node->children.head;
-                        free(node);
-                        node = next;
+                /* Descend if not already visited */
+                if (!(node->flags & NF_DELETED) && node->children.head != NULL) {
+                        node->flags |= NF_DELETED;
+                        node = node->children.head;
                         continue;
                 }
 
+                /* Free top node and exit */
+                if (node == top_node) {
+                        free(node);
+                        return;
+                }
+
+                /* Go to nearest sibling or parent */
                 if (node->next != NULL) {
-                        next = node->next;
-                        free(node);
-                        node = next;
-                        continue;
+                        next = node->next
+                } else if (node->parent != NULL) {
+                        next = node->parent;
                 }
-
-                if (node->parent != top_node && node->parent != NULL && node->parent->next != NULL) {
-                        next = node->parent->next;
-                        free(node);
-                        node = next;
-                        continue;
-                }
-
-                break;
+                free(node);
+                node = next;
         }
 }
 
