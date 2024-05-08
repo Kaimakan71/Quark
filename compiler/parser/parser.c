@@ -13,7 +13,7 @@
 
 static ast_node_t* parse_public(parser_t* parser)
 {
-        DEBUG("parser: Parsing public declaration...");
+        DEBUG("Parsing public declaration...");
 
         next_token(parser);
 
@@ -23,13 +23,13 @@ static ast_node_t* parse_public(parser_t* parser)
                 return parse_type_declaration(parser, true);
         }
 
-        error(&parser->token, "Expected \"proc\" after \"public\"\n");
+        error(&parser->token, "Expected \"proc\" or \"type\" after \"public\"\n");
         return NULL;
 }
 
 void parser_destory(parser_t* parser)
 {
-        DEBUG("parser: Destroying parser...");
+        DEBUG("Destroying parser...");
 
         if (parser != NULL) {
                 delete_nodes(parser->procedures);
@@ -41,7 +41,7 @@ void parser_destory(parser_t* parser)
 
 void parser_parse(parser_t* parser)
 {
-        DEBUG("parser: Parsing...");
+        DEBUG("Parsing...");
 
         next_token(parser);
         while (parser->token.kind != TK_EOF) {
@@ -62,7 +62,7 @@ parser_t* create_parser(char* source)
 {
         parser_t* parser;
 
-        DEBUG("parser: Creating parser...");
+        DEBUG("Creating parser...");
 
         parser = malloc(sizeof(parser_t));
 

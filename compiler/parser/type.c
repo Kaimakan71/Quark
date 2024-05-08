@@ -28,7 +28,7 @@ static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uin
 
 static bool parse_struct_members(parser_t* parser, ast_node_t* type)
 {
-        DEBUG("parser: Parsing struct members...");
+        DEBUG("Parsing struct members...");
 
         type->bytes = 0;
         while (parser->token.kind != TK_RCURLY) {
@@ -60,7 +60,7 @@ static ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
 {
         type->kind = NK_STRUCT;
 
-        DEBUG("parser: Parsing struct declaration...");
+        DEBUG("Parsing struct declaration...");
 
         if (next_token(parser)->kind != TK_LCURLY) {
                 error(&parser->token, "Expected \"{\" after \"struct\"\n");
@@ -86,7 +86,7 @@ ast_node_t* parse_type_declaration(parser_t* parser, bool public)
 {
         ast_node_t* type;
 
-        DEBUG("parser: Parsing type declaration...");
+        DEBUG("Parsing type declaration...");
 
         if (next_token(parser)->kind != TK_IDENTIFIER) {
                 error(&parser->token, "Expected type name after \"type\"\n");
@@ -181,7 +181,7 @@ ast_node_t* init_types(void)
 {
         ast_node_t* types;
 
-        DEBUG("parser: Initializing types...");
+        DEBUG("Initializing types...");
 
         types = create_node(NULL);
 

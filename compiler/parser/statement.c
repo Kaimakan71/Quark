@@ -13,7 +13,7 @@ static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t
 {
         ast_node_t* statement;
 
-        DEBUG("parser: Parsing return...");
+        DEBUG("Parsing return...");
 
         statement = create_node(parent);
         statement->kind = NK_RETURN;
@@ -59,7 +59,7 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
         ast_node_t* statement;
         ast_node_t* conditions;
 
-        DEBUG("parser: Parsing if...");
+        DEBUG("Parsing if...");
 
         if (next_token(parser)->kind != TK_LPAREN) {
                 error(&parser->token, "Expected \"(\" after \"if\"\n");
@@ -110,7 +110,7 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
 
 ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
-        DEBUG("parser: Parsing statement...");
+        DEBUG("Parsing statement...");
 
         if (parser->token.kind == TK_RETURN) {
                 return parse_return(parser, parent, procedure);
@@ -126,7 +126,7 @@ ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* pr
 
 bool parse_statement_group(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
-        DEBUG("parser: Parsing statement group...");
+        DEBUG("Parsing statement group...");
 
         while (parser->token.kind != TK_RCURLY) {
                 ast_node_t* statement;

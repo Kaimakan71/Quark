@@ -11,7 +11,9 @@
 #define ENABLE_DEBUG
 
 #ifdef ENABLE_DEBUG
-#define DEBUG(s) puts("\033[90m[DEBUG] " s "\033[0m")
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+#define DEBUG(s) puts("\033[90m[DEBUG] " __FILE__ ":" STR(__LINE__) ": " s "\033[0m")
 #else
 #define DEBUG(s)
 #endif

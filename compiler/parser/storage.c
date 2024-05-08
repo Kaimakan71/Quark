@@ -13,7 +13,7 @@ ast_node_t* parse_storage(parser_t* parser, ast_node_t* parent)
 {
         ast_node_t* variable;
 
-        DEBUG("parser: Parsing storage declartation...");
+        DEBUG("Parsing storage declartation...");
 
         /* Create variable and parse type */
         variable = create_node(parent);
@@ -71,7 +71,7 @@ ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_no
 {
         ast_node_t* variable;
 
-        DEBUG("parser: Parsing local variable declaration...");
+        DEBUG("Parsing local variable declaration...");
 
         variable = parse_storage(parser, parent);
         if (variable == NULL) {

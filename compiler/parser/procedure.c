@@ -13,7 +13,7 @@
 
 static bool parse_parameters(parser_t* parser, ast_node_t* parent)
 {
-        DEBUG("parser: Parsing parameters...");
+        DEBUG("Parsing parameters...");
 
         while (parser->token.kind != TK_RPAREN) {
                 ast_node_t* parameter;
@@ -44,7 +44,7 @@ ast_node_t* parse_procedure(parser_t* parser, bool public)
 {
         ast_node_t* procedure;
 
-        DEBUG("parser: Parsing procedure declaration...");
+        DEBUG("Parsing procedure declaration...");
 
         if (next_token(parser)->kind != TK_IDENTIFIER) {
                 error(&parser->token, "Expected procedure name after \"proc\"\n");

@@ -64,7 +64,7 @@ void delete_nodes(ast_node_t* top_node)
 
                 /* Go to nearest sibling or parent */
                 if (node->next != NULL) {
-                        next = node->next
+                        next = node->next;
                 } else if (node->parent != NULL) {
                         next = node->parent;
                 }

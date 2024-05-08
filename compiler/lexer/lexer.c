@@ -160,7 +160,7 @@ static void lex_character(lexer_t* lexer, token_t* token)
 
 void lexer_destroy(lexer_t* lexer)
 {
-        DEBUG("lexer: Destroying lexer...");
+        DEBUG("Destroying lexer...");
 
         if (lexer != NULL) {
                 free(lexer);
@@ -233,7 +233,7 @@ lexer_t* create_lexer(char* source)
 {
         lexer_t* lexer;
 
-        DEBUG("lexer: Creating lexer...");
+        DEBUG("Creating lexer...");
 
         if (source == NULL) {
                 return NULL;

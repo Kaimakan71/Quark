@@ -54,7 +54,7 @@ keyword_t* find_keyword(token_t* token)
 
 void init_keywords()
 {
-        DEBUG("lexer: Initializing keywords...");
+        DEBUG("Initializing keywords...");
 
         /* Clear all hashmap rows */
         for (int r = 0; r < KEYWORD_MAP_ROWS; r++) {
