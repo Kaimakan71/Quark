@@ -6,6 +6,7 @@
 #include <error.h>
 #include <debug.h>
 #include <parser/type.h>
+#include <parser/value.h>
 #include <parser/storage.h>
 
 ast_node_t* parse_storage(parser_t* parser, ast_node_t* parent)
@@ -77,7 +78,14 @@ ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_no
                 return NULL;
         }
 
-        /* TODO: Initialized local variables */
+        if (parser->token.kind == TK_EQUALS) {
+                next_token(parser);
+
+                if (parse_value(parser, variable) == NULL) {
+                        delete_nodes(variable);
+                        return NULL;
+                }
+        }
 
         if (parser->token.kind != TK_SEMICOLON) {
                 error(&parser->token, "Expected \";\" after variable declaration\n");

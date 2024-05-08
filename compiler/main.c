@@ -132,8 +132,9 @@ static void print_tree(ast_node_t* root)
                 }
 
                 switch (node->kind) {
+                case NK_BUILTIN_TYPE:
                 case NK_TYPE_ALIAS:
-                        printf("(%lu bytes, ptr depth %lu)", node->bytes, node->pointer_depth);
+                        printf("(%lu byte(s), ptr depth %lu)", node->bytes, node->pointer_depth);
                         break;
                 case NK_PROCEDURE:
                         printf("(%s)", node->flags & NF_PUBLIC ? "public":"private");
