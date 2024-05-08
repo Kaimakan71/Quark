@@ -14,6 +14,7 @@ typedef enum {
         NK_UNKNOWN,
 
         NK_BUILTIN_TYPE,
+        NK_TYPE_ALIAS,
         NK_STRUCT,
         NK_STRUCT_MEMBER,
 

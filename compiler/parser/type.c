@@ -106,14 +106,38 @@ ast_node_t* parse_type_declaration(parser_t* parser, bool public)
                 return NULL;
         }
 
-        /* TODO: Support more kinds of types */
-        if (next_token(parser)->kind != TK_STRUCT) {
-                error(&parser->token, "Expected \"struct\" after \":\"\n");
+        if (next_token(parser)->kind == TK_STRUCT) {
+                return parse_struct_declaration(parser, type);
+        }
+
+        /* TODO: Implement enums */
+
+        if (parser->token.kind != TK_IDENTIFIER) {
+                error(&parser->token, "Expected \"struct\" or type name after \":\"\n");
                 delete_nodes(type);
                 return NULL;
         }
 
-        return parse_struct_declaration(parser, type);
+        /* Parse aliased type */
+        if (parse_type_reference(parser, type) == NULL) {
+                delete_nodes(type);
+                return NULL;
+        }
+
+        /* Type aliases must be terminated with a ";" */
+        if (parser->token.kind != TK_SEMICOLON) {
+                error(&parser->token, "Expected \";\" after type reference\n");
+                delete_nodes(type);
+                return NULL;
+        }
+
+        /* Set alias properties */
+        type->kind = NK_TYPE_ALIAS;
+        type->bytes = type->type->bytes;
+
+        push_node(type, NULL);
+        next_token(parser);
+        return type;
 }
 
 ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node)

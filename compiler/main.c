@@ -22,7 +22,8 @@ static char* output_filename = NULL;
 
 static const char* node_kind_strings[] = {
         [NK_UNKNOWN] = "Unknown",
-        [NK_BUILTIN_TYPE] = "Type",
+        [NK_BUILTIN_TYPE] = "Built-in type",
+        [NK_TYPE_ALIAS] = "Type alias",
         [NK_STRUCT] = "Struct",
         [NK_STRUCT_MEMBER] = "Struct member",
         [NK_PROCEDURE] = "Procedure",
@@ -122,15 +123,17 @@ static void print_tree(ast_node_t* root)
         node = root->children.head;
         indent = 0;
         while (node != NULL) {
-                printf("%*s %s ", indent, "", node_kind_strings[node->kind]);
+                if (indent > 0) {
+                        printf("%*s %s ", indent, "", node_kind_strings[node->kind]);
+                }
 
                 if (node->flags & NF_NAMED) {
                         printf("%.*s ", node->name.length, node->name.string);
                 }
 
                 switch (node->kind) {
-                case NK_BUILTIN_TYPE:
-                        printf("(%lu bytes)", node->bytes);
+                case NK_TYPE_ALIAS:
+                        printf("(%lu bytes, ptr depth %lu)", node->bytes, node->pointer_depth);
                         break;
                 case NK_PROCEDURE:
                         printf("(%s)", node->flags & NF_PUBLIC ? "public":"private");
