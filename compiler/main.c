@@ -190,16 +190,16 @@ int main(int argc, char* argv[])
                 return -1;
         }
 
-        generator.out = fopen(output_filename, "w");
-        if (generator.out == NULL) {
-                perror(output_filename);
-                return -1;
-        }
-
         input = load_text_file(input_filename);
         if (input == NULL) {
                 perror(input_filename);
-                fclose(generator.out);
+                return -1;
+        }
+
+        generator.out = fopen(output_filename, "w");
+        if (generator.out == NULL) {
+                perror(output_filename);
+		free(input);
                 return -1;
         }
 
