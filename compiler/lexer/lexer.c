@@ -130,11 +130,13 @@ static void lex_number_base10(lexer_stream_t* stream, token_t* token)
 
 static void lex_string(lexer_stream_t* stream, token_t* token)
 {
-        /* TODO: Ignore escaped quotes */
-
         /* Find end of string */
         stream->pos++;
         while (*stream->pos != '"') {
+		if (stream->pos[0] == '\\' && stream->pos[1] == '\"') {
+			stream->pos++;
+		}
+
                 stream->pos++;
         }
         stream->pos++;
@@ -145,11 +147,13 @@ static void lex_string(lexer_stream_t* stream, token_t* token)
 
 static void lex_character(lexer_stream_t* stream, token_t* token)
 {
-        /* TODO: Ignore escaped quotes */
-
         /* Find end of character */
         stream->pos++;
         while (*stream->pos != '\'') {
+		if (stream->pos[0] == '\\' && stream->pos[1] == '\'') {
+			stream->pos++;
+		}
+
                 stream->pos++;
         }
         stream->pos++;
