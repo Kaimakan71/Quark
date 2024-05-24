@@ -34,7 +34,7 @@ void parser_destory(parser_t* parser)
         if (parser != NULL) {
                 delete_nodes(parser->procedures);
                 delete_nodes(parser->types);
-                lexer_destroy(parser->lexer);
+                lexer_stream_destroy(parser->lexer_stream);
                 free(parser);
         }
 }
@@ -66,8 +66,8 @@ parser_t* create_parser(char* source)
 
         parser = malloc(sizeof(parser_t));
 
-        parser->lexer = create_lexer(source);
-        if (parser->lexer == NULL) {
+        parser->lexer_stream = create_lexer_stream(source);
+        if (parser->lexer_stream == NULL) {
                 free(parser);
                 return NULL;
         }

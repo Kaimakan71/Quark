@@ -10,7 +10,7 @@
 #include <parser/ast.h>
 
 typedef struct {
-        lexer_t* lexer;
+        lexer_stream_t* lexer_stream;
         token_t token;
         ast_node_t* types;
         ast_node_t* procedures;
@@ -18,7 +18,7 @@ typedef struct {
 
 static inline token_t* next_token(parser_t* parser)
 {
-        lexer_next(parser->lexer, &parser->token);
+        lexer_stream_next(parser->lexer_stream, &parser->token);
         return &parser->token;
 }
 

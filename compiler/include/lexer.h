@@ -13,10 +13,10 @@ typedef struct {
         char* pos;
         char* line_start;
         int line;
-} lexer_t;
+} lexer_stream_t;
 
-void lexer_destroy(lexer_t* lexer);
-void lexer_next(lexer_t* lexer, token_t* token);
-lexer_t* create_lexer(char* source);
+void lexer_stream_destroy(lexer_stream_t* stream);
+void lexer_stream_next(lexer_stream_t* stream, token_t* token);
+lexer_stream_t* create_lexer_stream(char* source);
 
 #endif /* !_LEXER_H */

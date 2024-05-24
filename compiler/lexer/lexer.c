@@ -11,32 +11,32 @@
 #include <lexer/char_info.h>
 #include <lexer/keyword.h>
 
-static void skip_whitespace(lexer_t* lexer)
+static void skip_whitespace(lexer_stream_t* stream)
 {
-        while (char_info[*lexer->pos] & CHAR_WHITESPACE) {
-                if (char_info[*lexer->pos] & CHAR_VERT_WS) {
-                        lexer->pos++;
-                        lexer->line++;
-                        lexer->line_start = lexer->pos;
+        while (char_info[*stream->pos] & CHAR_WHITESPACE) {
+                if (char_info[*stream->pos] & CHAR_VERT_WS) {
+                        stream->pos++;
+                        stream->line++;
+                        stream->line_start = stream->pos;
                 } else {
-                        lexer->pos++;
+                        stream->pos++;
                 }
         }
 }
 
-static void lex_identifier(lexer_t* lexer, token_t* token)
+static void lex_identifier(lexer_stream_t* stream, token_t* token)
 {
         keyword_t* keyword;
 
         /* Find end of identifier */
-        lexer->pos++;
-        while (char_info[*lexer->pos] & CHAR_ALNUM || *lexer->pos == '_') {
-                lexer->pos++;
+        stream->pos++;
+        while (char_info[*stream->pos] & CHAR_ALNUM || *stream->pos == '_') {
+                stream->pos++;
         }
 
         /* Fill in token struct */
         token->kind = TK_IDENTIFIER;
-        token->length = (size_t)(lexer->pos - token->pos);
+        token->length = (size_t)(stream->pos - token->pos);
         token->hash = hash_data(token->pos, token->length);
 
         /* Look for a keyword the identifier matches */
@@ -46,16 +46,16 @@ static void lex_identifier(lexer_t* lexer, token_t* token)
         }
 }
 
-static void lex_operator(lexer_t* lexer, token_t* token)
+static void lex_operator(lexer_stream_t* stream, token_t* token)
 {
         token->length = 1;
 
-        switch (*lexer->pos) {
+        switch (*stream->pos) {
         case '+':
-                if (lexer->pos[1] == '+') {
+                if (stream->pos[1] == '+') {
                         token->kind = TK_INCREMENT;
                         token->length = 2;
-                } else if (lexer->pos[1] == '=') {
+                } else if (stream->pos[1] == '=') {
                         token->kind = TK_PLUS;
                         token->flags |= TF_ASSIGNMENT;
                         token->length = 2;
@@ -65,13 +65,13 @@ static void lex_operator(lexer_t* lexer, token_t* token)
 
                 break;
         case '-':
-                if (lexer->pos[1] == '>') {
+                if (stream->pos[1] == '>') {
                         token->kind = TK_ARROW;
                         token->length = 2;
-                } else if (lexer->pos[1] == '-') {
+                } else if (stream->pos[1] == '-') {
                         token->kind = TK_DECREMENT;
                         token->length = 2;
-                } else if (lexer->pos[1] == '=') {
+                } else if (stream->pos[1] == '=') {
                         token->kind = TK_MINUS;
                         token->flags |= TF_ASSIGNMENT;
                         token->length = 2;
@@ -87,8 +87,8 @@ static void lex_operator(lexer_t* lexer, token_t* token)
                 token->kind = TK_EQUALS;
                 break;
         default:
-                token->kind = char_info[*lexer->pos] >> CHAR_OPER_SHIFT;
-                if (lexer->pos[1] == '=') {
+                token->kind = char_info[*stream->pos] >> CHAR_OPER_SHIFT;
+                if (stream->pos[1] == '=') {
                         token->flags |= TF_ASSIGNMENT;
                         token->length =  2;
                 }
@@ -96,131 +96,131 @@ static void lex_operator(lexer_t* lexer, token_t* token)
                 break;
         }
 
-        lexer->pos += token->length;
+        stream->pos += token->length;
 }
 
-static void lex_number_base16(lexer_t* lexer, token_t* token)
+static void lex_number_base16(lexer_stream_t* stream, token_t* token)
 {
         /* Calculate value of hex number */
         token->value = 0;
-        lexer->pos += 2;
-        while (char_info[*lexer->pos] & CHAR_HEX) {
+        stream->pos += 2;
+        while (char_info[*stream->pos] & CHAR_HEX) {
                 token->value <<= 4;
 
-                if (char_info[*lexer->pos] == CHAR_XUPPER) {
-                        token->value |= *lexer->pos++ - 'A' + 10;
-                } else if (char_info[*lexer->pos] == CHAR_XLOWER) {
-                        token->value |= *lexer->pos++ - 'a' + 10;
+                if (char_info[*stream->pos] == CHAR_XUPPER) {
+                        token->value |= *stream->pos++ - 'A' + 10;
+                } else if (char_info[*stream->pos] == CHAR_XLOWER) {
+                        token->value |= *stream->pos++ - 'a' + 10;
                 } else {
-                        token->value |= *lexer->pos++ - '0';
+                        token->value |= *stream->pos++ - '0';
                 }
         }
 }
 
-static void lex_number_base10(lexer_t* lexer, token_t* token)
+static void lex_number_base10(lexer_stream_t* stream, token_t* token)
 {
         /* Calculate value of decimal number */
-        token->value = *lexer->pos - '0';
-        lexer->pos++;
-        while (char_info[*lexer->pos] & CHAR_DIGIT) {
+        token->value = *stream->pos - '0';
+        stream->pos++;
+        while (char_info[*stream->pos] & CHAR_DIGIT) {
                 token->value *= 10;
-                token->value += *lexer->pos++ - '0';
+                token->value += *stream->pos++ - '0';
         }
 }
 
-static void lex_string(lexer_t* lexer, token_t* token)
+static void lex_string(lexer_stream_t* stream, token_t* token)
 {
         /* TODO: Ignore escaped quotes */
 
         /* Find end of string */
-        lexer->pos++;
-        while (*lexer->pos != '"') {
-                lexer->pos++;
+        stream->pos++;
+        while (*stream->pos != '"') {
+                stream->pos++;
         }
-        lexer->pos++;
+        stream->pos++;
 
         token->kind = TK_STRING;
-        token->length = (size_t)(lexer->pos - token->pos) - 1;
+        token->length = (size_t)(stream->pos - token->pos) - 1;
 }
 
-static void lex_character(lexer_t* lexer, token_t* token)
+static void lex_character(lexer_stream_t* stream, token_t* token)
 {
         /* TODO: Ignore escaped quotes */
 
         /* Find end of character */
-        lexer->pos++;
-        while (*lexer->pos != '\'') {
-                lexer->pos++;
+        stream->pos++;
+        while (*stream->pos != '\'') {
+                stream->pos++;
         }
-        lexer->pos++;
+        stream->pos++;
 
         token->kind = TK_CHARACTER;
-        token->length = (size_t)(lexer->pos - token->pos) - 1;
+        token->length = (size_t)(stream->pos - token->pos) - 1;
 }
 
-void lexer_destroy(lexer_t* lexer)
+void lexer_stream_destroy(lexer_stream_t* stream)
 {
-        DEBUG("Destroying lexer...");
+        DEBUG("Destroying lexer stream...");
 
-        if (lexer != NULL) {
-                free(lexer);
+        if (stream != NULL) {
+                free(stream);
         }
 }
 
-void lexer_next(lexer_t* lexer, token_t* token)
+void lexer_stream_next(lexer_stream_t* stream, token_t* token)
 {
-        if (lexer == NULL || token == NULL) {
+        if (stream == NULL || token == NULL) {
                 return;
         }
 
-        skip_whitespace(lexer);
+        skip_whitespace(stream);
 
         token->flags = TF_NONE;
-        token->pos = lexer->pos;
-        token->line = lexer->line;
-        token->column = (int)(token->pos - lexer->line_start) + 1;
+        token->pos = stream->pos;
+        token->line = stream->line;
+        token->column = (int)(token->pos - stream->line_start) + 1;
 
-        if (char_info[*lexer->pos] & CHAR_ALPHA || *lexer->pos == '_') {
-                lex_identifier(lexer, token);
+        if (char_info[*stream->pos] & CHAR_ALPHA || *stream->pos == '_') {
+                lex_identifier(stream, token);
                 return;
         }
 
-        if (char_info[*lexer->pos] & CHAR_SINGLE) {
-                token->kind = char_info[*lexer->pos] >> CHAR_SINGLE_SHIFT;
+        if (char_info[*stream->pos] & CHAR_SINGLE) {
+                token->kind = char_info[*stream->pos] >> CHAR_SINGLE_SHIFT;
                 token->length = 1;
-                lexer->pos++;
+                stream->pos++;
                 return;
         }
 
-        if (char_info[*lexer->pos] & CHAR_OPER) {
-                lex_operator(lexer, token);
+        if (char_info[*stream->pos] & CHAR_OPER) {
+                lex_operator(stream, token);
                 return;
         }
 
-        if (char_info[*lexer->pos] & CHAR_DIGIT) {
+        if (char_info[*stream->pos] & CHAR_DIGIT) {
                 token->kind = TK_NUMBER;
 
-                if (lexer->pos[0] == '0' && lexer->pos[1] == 'x') {
-                        lex_number_base16(lexer, token);
+                if (stream->pos[0] == '0' && stream->pos[1] == 'x') {
+                        lex_number_base16(stream, token);
                 } else {
-                        lex_number_base10(lexer, token);
+                        lex_number_base10(stream, token);
                 }
 
-                token->length = (size_t)(lexer->pos - token->pos);
+                token->length = (size_t)(stream->pos - token->pos);
                 return;
         }
 
-        if (*lexer->pos == '"') {
-                lex_string(lexer, token);
+        if (*stream->pos == '"') {
+                lex_string(stream, token);
                 return;
         }
 
-        if (*lexer->pos == '\'') {
-                lex_character(lexer, token);
+        if (*stream->pos == '\'') {
+                lex_character(stream, token);
                 return;
         }
 
-        if (*lexer->pos == '\0') {
+        if (*stream->pos == '\0') {
                 token->kind = TK_EOF;
                 return;
         }
@@ -229,23 +229,23 @@ void lexer_next(lexer_t* lexer, token_t* token)
         return;
 }
 
-lexer_t* create_lexer(char* source)
+lexer_stream_t* create_lexer_stream(char* source)
 {
-        lexer_t* lexer;
+        lexer_stream_t* stream;
 
-        DEBUG("Creating lexer...");
+        DEBUG("Creating lexer stream...");
 
         if (source == NULL) {
                 return NULL;
         }
 
-        lexer = malloc(sizeof(lexer_t));
-        lexer->pos = source;
-        lexer->line_start = source;
-        lexer->line = 1;
+        stream = malloc(sizeof(lexer_stream_t));
+        stream->pos = source;
+        stream->line_start = source;
+        stream->line = 1;
 
         /* TODO: Only initialize keywords once */
         init_keywords();
 
-        return lexer;
+        return stream;
 }
