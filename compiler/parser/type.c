@@ -34,7 +34,7 @@ static bool parse_struct_members(parser_t* parser, ast_node_t* type)
         while (parser->token.kind != TK_RCURLY) {
                 ast_node_t* member;
 
-                member = parse_storage(parser, type);
+                member = parse_storage_declaration(parser, type);
                 if (member == NULL) {
                         return false;
                 }
@@ -82,7 +82,7 @@ static ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
         return type;
 }
 
-ast_node_t* parse_type_declaration(parser_t* parser, bool public)
+ast_node_t* parse_type_declaration(parser_t* parser)
 {
         ast_node_t* type;
 
@@ -99,9 +99,6 @@ ast_node_t* parse_type_declaration(parser_t* parser, bool public)
         type->name.string = parser->token.pos;
         type->name.length = parser->token.length;
         type->name.hash = parser->token.hash;
-        if (public) {
-                type->flags |= NF_PUBLIC;
-        }
 
         if (next_token(parser)->kind != TK_COLON) {
                 error(&parser->token, "Expected \":\" after type name\n");
@@ -114,7 +111,6 @@ ast_node_t* parse_type_declaration(parser_t* parser, bool public)
         }
 
         /* TODO: Implement enums */
-
         if (parser->token.kind != TK_IDENTIFIER) {
                 error(&parser->token, "Expected \"struct\" or type name after \":\"\n");
                 delete_nodes(type);

@@ -21,19 +21,19 @@ static char* input_filename = NULL;
 static char* output_filename = NULL;
 
 static const char* node_kind_strings[] = {
-        [NK_UNKNOWN] = "Unknown",
-        [NK_BUILTIN_TYPE] = "Built-in type",
-        [NK_TYPE_ALIAS] = "Type alias",
-        [NK_STRUCT] = "Struct",
-        [NK_STRUCT_MEMBER] = "Struct member",
-        [NK_PROCEDURE] = "Procedure",
-        [NK_PARAMETER] = "Parameter",
-        [NK_RETURN] = "Return",
-        [NK_IF] = "If",
-        [NK_CONDITIONS] = "Conditions",
-        [NK_LOCAL_VARIABLE] = "Local variable",
-        [NK_VARIABLE_REFERENCE] = "Variable reference",
-        [NK_NUMBER] = "Number"
+        [NK_UNKNOWN] = "unknown",
+        [NK_BUILTIN_TYPE] = "built-in type",
+        [NK_TYPE_ALIAS] = "type alias",
+        [NK_STRUCT] = "struct",
+        [NK_STRUCT_MEMBER] = "member",
+        [NK_PROCEDURE] = "proc",
+        [NK_PARAMETER] = "parameter",
+        [NK_RETURN] = "return",
+        [NK_IF] = "if",
+        [NK_CONDITIONS] = "conditions:",
+        [NK_LOCAL_VARIABLE] = "local variable",
+        [NK_VARIABLE_REFERENCE] = "variable reference",
+        [NK_NUMBER] = "number"
 };
 
 static param_t params[] = {
@@ -115,49 +115,57 @@ static bool parse_args(int argc, char* argv[])
         return true;
 }
 
+static void print_node(ast_node_t* node)
+{
+        if (node->flags & NF_PUBLIC) {
+                printf("public ");
+        }
+
+        printf("%s ", node_kind_strings[node->kind]);
+
+        if (node->flags & NF_NAMED) {
+                printf("%.*s ", node->name.length, node->name.string);
+        }
+
+        switch (node->kind) {
+        case NK_BUILTIN_TYPE:
+        case NK_TYPE_ALIAS:
+                printf("(%lu byte(s), ptr depth %lu)", node->bytes, node->pointer_depth);
+                break;
+        case NK_PARAMETER:
+        case NK_STRUCT_MEMBER:
+        case NK_LOCAL_VARIABLE:
+                printf("(%.*s)", node->type->name.length, node->type->name.string);
+                break;
+        case NK_NUMBER:
+                printf("%lx", node->value);
+                break;
+        case NK_VARIABLE_REFERENCE:
+                printf("to %.*s", node->variable->name.length, node->variable->name.string);
+                break;
+        }
+}
+
 static void print_tree(ast_node_t* root)
 {
         ast_node_t* node;
         int indent;
 
+        root->flags |= NF_VISITED;
         node = root->children.head;
         indent = 0;
         while (node != NULL) {
-                if (indent > 0) {
-                        printf("%*s %s ", indent, "", node_kind_strings[node->kind]);
-                }
+                if (!(node->flags & NF_VISITED)) {
+                        printf("%*s", indent, "");
+                        print_node(node);
+                        printf("\n");
 
-                if (node->flags & NF_NAMED) {
-                        printf("%.*s ", node->name.length, node->name.string);
-                }
-
-                switch (node->kind) {
-                case NK_BUILTIN_TYPE:
-                case NK_TYPE_ALIAS:
-                        printf("(%lu byte(s), ptr depth %lu)", node->bytes, node->pointer_depth);
-                        break;
-                case NK_PROCEDURE:
-                        printf("(%s)", node->flags & NF_PUBLIC ? "public":"private");
-                        break;
-                case NK_PARAMETER:
-                case NK_STRUCT_MEMBER:
-                case NK_LOCAL_VARIABLE:
-                        printf("(%.*s)", node->type->name.length, node->type->name.string);
-                        break;
-                case NK_NUMBER:
-                        printf("%lx", node->value);
-                        break;
-                case NK_VARIABLE_REFERENCE:
-                        printf("to %.*s", node->variable->name.length, node->variable->name.string);
-                        break;
-                }
-
-                printf("\n");
-
-                if (node->children.head != NULL) {
-                        node = node->children.head;
-                        indent += 4;
-                        continue;
+                        node->flags |= NF_VISITED;
+                        if (node->children.head != NULL) {
+                                node = node->children.head;
+                                indent += 4;
+                                continue;  
+                        }
                 }
 
                 if (node->next != NULL) {
@@ -165,15 +173,9 @@ static void print_tree(ast_node_t* root)
                         continue;
                 }
 
-                if (node->parent != NULL && node->parent->next != NULL) {
-                        node = node->parent->next;
+                if (node->parent != NULL) {
+                        node = node->parent;
                         indent -= 4;
-                        continue;
-                }
-
-                if (node->parent->parent != NULL && node->parent->parent->next != NULL) {
-                        node = node->parent->parent->next;
-                        indent -= 8;
                         continue;
                 }
 
@@ -199,7 +201,7 @@ int main(int argc, char* argv[])
         generator.out = fopen(output_filename, "w");
         if (generator.out == NULL) {
                 perror(output_filename);
-		free(input);
+                free(input);
                 return -1;
         }
 

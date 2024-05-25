@@ -18,7 +18,7 @@ static bool parse_parameters(parser_t* parser, ast_node_t* parent)
         while (parser->token.kind != TK_RPAREN) {
                 ast_node_t* parameter;
 
-                parameter = parse_storage(parser, parent);
+                parameter = parse_storage_declaration(parser, parent);
                 if (parameter == NULL) {
                         return false;
                 }
@@ -40,7 +40,7 @@ static bool parse_parameters(parser_t* parser, ast_node_t* parent)
         return true;
 }
 
-ast_node_t* parse_procedure(parser_t* parser, bool public)
+ast_node_t* parse_proc_declaration(parser_t* parser)
 {
         ast_node_t* procedure;
 
@@ -58,9 +58,6 @@ ast_node_t* parse_procedure(parser_t* parser, bool public)
         procedure->name.string = parser->token.pos;
         procedure->name.length = parser->token.length;
         procedure->name.hash = parser->token.hash;
-        if (public) {
-                procedure->flags |= NF_PUBLIC;
-        }
 
         if (next_token(parser)->kind != TK_LPAREN) {
                 error(&parser->token, "Expected \"(\" after procedure name\n");

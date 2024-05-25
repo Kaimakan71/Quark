@@ -30,9 +30,9 @@ typedef enum {
 } node_kind_t;
 
 #define NF_NONE   0
-#define NF_DELETED (1 << 0)
-#define NF_NAMED   (1 << 1)
-#define NF_PUBLIC  (1 << 2)
+#define NF_NAMED    (1 << 0)
+#define NF_PUBLIC   (1 << 1)
+#define NF_VISITED  (1 << 2)
 
 struct ast_node;
 

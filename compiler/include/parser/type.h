@@ -11,7 +11,7 @@
 #include <parser/ast.h>
 
 ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node);
-ast_node_t* parse_type_declaration(parser_t* parser, bool public);
+ast_node_t* parse_type_declaration(parser_t* parser);
 ast_node_t* init_types(void);
 
 #endif /* !_PARSER_TYPE_H */

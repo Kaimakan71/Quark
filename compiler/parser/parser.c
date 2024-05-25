@@ -11,20 +11,27 @@
 #include <parser/type.h>
 #include <parser/procedure.h>
 
-static ast_node_t* parse_public(parser_t* parser)
+static ast_node_t* parse_public_declaration(parser_t* parser)
 {
+        ast_node_t* node;
+
         DEBUG("Parsing public declaration...");
 
         next_token(parser);
-
         if (parser->token.kind == TK_PROC) {
-                return parse_procedure(parser, true);
+                node = parse_proc_declaration(parser);
         } else if (parser->token.kind == TK_TYPE) {
-                return parse_type_declaration(parser, true);
+                node = parse_type_declaration(parser);
+        } else {
+                error(&parser->token, "Expected \"proc\" or \"type\" after \"public\"\n");
+                return NULL;
         }
 
-        error(&parser->token, "Expected \"proc\" or \"type\" after \"public\"\n");
-        return NULL;
+        if (node != NULL) {
+                node->flags |= NF_PUBLIC;
+        }
+
+        return node;
 }
 
 void parser_destory(parser_t* parser)
@@ -46,11 +53,11 @@ void parser_parse(parser_t* parser)
         next_token(parser);
         while (parser->token.kind != TK_EOF) {
                 if (parser->token.kind == TK_PUBLIC) {
-                        parse_public(parser);
+                        parse_public_declaration(parser);
                 } else if (parser->token.kind == TK_PROC) {
-                        parse_procedure(parser, false);
+                        parse_proc_declaration(parser);
                 } else if (parser->token.kind == TK_TYPE) {
-                        parse_type_declaration(parser, false);
+                        parse_type_declaration(parser);
                 } else {
                         error(&parser->token, "Unexpected \"%.*s\"\n", parser->token.length, parser->token.pos);
                         break;

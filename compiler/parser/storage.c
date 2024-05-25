@@ -9,7 +9,7 @@
 #include <parser/value.h>
 #include <parser/storage.h>
 
-ast_node_t* parse_storage(parser_t* parser, ast_node_t* parent)
+ast_node_t* parse_storage_declaration(parser_t* parser, ast_node_t* parent)
 {
         ast_node_t* variable;
 
@@ -73,14 +73,13 @@ ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_no
 
         DEBUG("Parsing local variable declaration...");
 
-        variable = parse_storage(parser, parent);
+        variable = parse_storage_declaration(parser, parent);
         if (variable == NULL) {
                 return NULL;
         }
 
         if (parser->token.kind == TK_EQUALS) {
                 next_token(parser);
-
                 if (parse_value(parser, variable) == NULL) {
                         delete_nodes(variable);
                         return NULL;

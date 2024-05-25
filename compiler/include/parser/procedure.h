@@ -9,6 +9,6 @@
 #include <stdbool.h>
 #include <parser.h>
 
-ast_node_t* parse_procedure(parser_t* parser, bool public);
+ast_node_t* parse_proc_declaration(parser_t* parser);
 
 #endif /* !_PARSER_PROCEDURE_H */

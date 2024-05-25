@@ -3,10 +3,10 @@
 # Provided under the BSD 3-Clause license.
 BINARY = quarkc
 OFILES = error.o hash.o \
-		lexer/char_info.o lexer/keyword.o lexer/lexer.o \
-		parser/ast.o parser/storage.o parser/type.o parser/value.o parser/statement.o parser/procedure.o parser/parser.o \
-		codegen/codegen.o \
-		main.o
+	lexer/char_info.o lexer/keyword.o lexer/lexer.o \
+	parser/ast.o parser/storage.o parser/type.o parser/value.o parser/statement.o parser/procedure.o parser/parser.o \
+	codegen/codegen.o \
+	main.o
 CFLAGS = -I include
 LDFLAGS =
 
