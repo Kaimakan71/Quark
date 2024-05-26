@@ -66,6 +66,11 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
                 return NULL;
         }
 
+	if (next_token(parser)->kind == TK_RPAREN) {
+		error(&parser->token, "Expected conditions after \"(\"\n");
+		return NULL;
+	}
+
         statement = create_node(parent);
         statement->kind = NK_IF;
 
@@ -73,23 +78,20 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
         conditions->kind = NK_CONDITIONS;
         push_node(conditions, NULL);
 
-        /* Parse conditions, if any */
-        if (next_token(parser)->kind != TK_RPAREN) {
-                if (!parse_value(parser, conditions)) {
-                        delete_nodes(statement);
-                        return NULL;
-                }
+        if (!parse_value(parser, conditions)) {
+                delete_nodes(statement);
+                return NULL;
+        }
 
-                if (parser->token.kind != TK_RPAREN) {
-                        error(&parser->token, "Expected \")\" after conditions\n");
-                        delete_nodes(statement);
-                        return NULL;
-                }
+        if (parser->token.kind != TK_RPAREN) {
+                error(&parser->token, "Expected \")\" after conditions\n");
+                delete_nodes(statement);
+                return NULL;
         }
 
         /* If body must start with a "{" */
         if (next_token(parser)->kind != TK_LCURLY) {
-                error(&parser->token, "Expected \";\" or \"{\" after \")\"\n");
+                error(&parser->token, "Expected \"{\" after \")\"\n");
                 delete_nodes(statement);
                 return NULL;
         }
