@@ -1,8 +1,8 @@
 # Standard library build configuration.
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
-BINARY = libquark.a
-LDFLAGS = --unresolved-symbols=ignore-all
+BINARY = lib.o
+LDFLAGS = -r
 NASMFLAGS = -f elf64
 
 OFILES = string.o
