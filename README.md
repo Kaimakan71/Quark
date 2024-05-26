@@ -13,6 +13,7 @@ Run `make test` to run compiler tests (which are in the `test` directory).
 If you want to disable debug messages, clean (`make clean`) then rebuild (`make ENABLE_DEBUG=0`).
 
 # TODO
-* Expression/condition parsing
-* Escape sequences (e.g. `"Hi\n"`)
-* Global variables/constants (e.g. `const uint8 debugLevel = 0x03;`)
+* Arithmetic expressions/conditions
+* Enums
+* Global variables/constants
+* Escape sequences
