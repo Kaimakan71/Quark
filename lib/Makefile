@@ -1,17 +1,29 @@
 # Standard library build configuration.
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
-OFILES = linux/entry.o linux/system.o hyra/entry.o hyra/system.o string.o
+BINARY = libquark.a
+LDFLAGS = --unresolved-symbols=ignore-all
 NASMFLAGS = -f elf64
 
-.PHONY: all clean
+OFILES = string.o
+ifeq ($(TARGET_OS),hyra)
+OFILES += hyra/entry.o hyra/system.o
+else
+OFILES += linux/entry.o linux/system.o
+endif
 
-all: $(OFILES)
+.PHONY: all
+all: $(BINARY)
+
+$(BINARY): $(OFILES)
+	@echo Linking $@...
+	@$(LD) $^ $(LDFLAGS) -o $@
 
 %.o: %.asm
 	@echo Assembling $<...
 	@nasm $< $(NASMFLAGS) -o $@
 
+.PHONY: clean
 clean:
 	@echo Cleaning lib...
 	@rm -f $(OFILES)

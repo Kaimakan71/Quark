@@ -8,8 +8,6 @@
 
 #include <stdio.h>
 
-#define ENABLE_DEBUG
-
 #ifdef ENABLE_DEBUG
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)

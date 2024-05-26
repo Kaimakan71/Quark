@@ -4,6 +4,9 @@
 compiler/quarkc
 .vscode/
 .vs/
+*.a
+*.d
 *.o
+*.so
 *.elf
 *.exe

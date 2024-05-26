@@ -2,20 +2,22 @@
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
 
+export ENABLE_DEBUG ?= 1
 export CC ?= clang
-export LD ?= clang
+export LD ?= lld
 export NASM ?= nasm
-export TESTS_TARGET ?= linux
+export TARGET_OS ?= linux
 
-.PHONY: all test clean
-
+.PHONY: all
 all:
 	@$(MAKE) -C compiler
 	@$(MAKE) -C lib
 
+.PHONY: test
 test:
 	@$(MAKE) -C compiler test
 
+.PHONY: clean
 clean:
 	@$(MAKE) -C compiler clean
 	@$(MAKE) -C lib clean

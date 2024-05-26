@@ -2,18 +2,25 @@
 # Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
 # Provided under the BSD 3-Clause license.
 BINARY = quarkc
+CFLAGS = -I include
+ifeq ($(ENABLE_DEBUG),1)
+CFLAGS += -DENABLE_DEBUG
+endif
+LDFLAGS =
+NASMFLAGS = -f elf64
+
 OFILES = error.o hash.o \
 	lexer/char_info.o lexer/keyword.o lexer/lexer.o \
 	parser/ast.o parser/storage.o parser/type.o parser/value.o parser/statement.o parser/procedure.o parser/parser.o \
 	codegen/codegen.o \
 	main.o
-CFLAGS = -I include
-LDFLAGS =
 
-TESTS_OFILES = tests/exit.o tests/write.o tests/file.o tests/if.o
-LIB_OFILES = ../lib/$(TESTS_TARGET)/entry.o ../lib/$(TESTS_TARGET)/system.o ../lib/string.o
+TESTS = $(addprefix tests/,exit write file if)
+TESTS_OFILES = $(addsuffix .o,$(TESTS))
+TESTS_ASMFILES = $(addsuffix .asm,$(TESTS))
+TESTS_BINARIES = $(addsuffix .elf,$(TESTS))
 
-ifeq ($(TESTS_TARGET),hyra)
+ifeq ($(TARGET_OS),hyra)
 TESTS_LD = ../../Hyra/cross/bin/x86_64-hyra-gcc
 TESTS_LDFLAGS = -pie -nostdlib
 else
@@ -23,6 +30,7 @@ endif
 
 .PHONY: all test clean
 
+.PHONY: all
 all: $(BINARY)
 
 $(BINARY): $(OFILES)
@@ -33,20 +41,22 @@ $(BINARY): $(OFILES)
 	@echo Compiling $<...
 	@$(CC) -c $< $(CFLAGS) -o $@
 
-test: tests/exit.elf tests/write.elf tests/file.elf tests/if.elf
+.PHONY: test
+test: $(TESTS_BINARIES)
 
 %.elf: %.o
 	@echo Linking $@...
-	@$(TESTS_LD) $(TESTS_LDFLAGS) $(LIB_OFILES) $< -o $@
+	@$(TESTS_LD) $(TESTS_LDFLAGS) ../lib/libquark.a $< -o $@
 
 %.o: %.asm
 	@echo Assembling $<
-	@$(NASM) $< -f elf64 -o $@
+	@$(NASM) $< $(NASMFLAGS) -o $@
 
 %.asm: %.quark
 	@echo Compiling $<...
 	@./$(BINARY) -i $< -o $@
 
+.PHONY: clean
 clean:
 	@echo Cleaning compiler...
-	@rm -f $(OFILES) $(TESTS_OFILES) $(TESTS_OFILES:.o=.asm) $(TESTS_OFILES:.o=.elf)
+	@rm -f $(OFILES) $(TESTS_OFILES) $(TESTS_ASMFILES) $(TESTS_BINARIES)

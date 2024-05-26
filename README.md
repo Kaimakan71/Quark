@@ -10,6 +10,8 @@ Run `make test` to run compiler tests (which are in the `test` directory).
 # Usage
 `./compiler/quarkc -i filename.quark -o filename.asm`. This will generate assembly code from the quark source code. If you want to assemble the program, you can use NASM `nasm filename.asm -f elf64 -o filename.o`.
 
+If you want to disable debug messages, clean (`make clean`) then rebuild (`make ENABLE_DEBUG=0`).
+
 # TODO
 * Expression/condition parsing
 * Escape sequences (e.g. `"Hi\n"`)
