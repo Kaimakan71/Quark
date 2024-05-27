@@ -6,10 +6,11 @@
 #include <error.h>
 #include <debug.h>
 #include <parser.h>
-#include <parser/type.h>
-#include <parser/statement.h>
 #include <parser/procedure.h>
+#include <parser/statement.h>
 #include <parser/storage.h>
+#include <parser/type.h>
+#include <parser/value.h>
 
 static bool parse_parameters(parser_t* parser, ast_node_t* parent)
 {
@@ -125,21 +126,27 @@ ast_node_t* parse_proc_call(parser_t* parser, ast_node_t* parent, token_t* calle
                 return NULL;
         }
 
-        /* TODO: Call arguments */
-        if (next_token(parser)->kind != TK_RPAREN) {
-                error(&parser->token, "Expected \")\" after \"(\"\n");
-                return NULL;
+        /* Create call */
+        call = create_node(parent);
+        call->kind = NK_CALL;
+        call->callee = callee;
+
+        next_token(parser);
+        while (parser->token.kind != TK_RPAREN) {
+                if (parse_value(parser, call) == NULL) {
+                        delete_nodes(call);
+                        return NULL;
+                }
+
+                if (parser->token.kind == TK_COMMA && next_token(parser)->kind == TK_RPAREN) {
+                        warn(&parser->token, "Extra \",\" after arguments\n");
+                }
         }
 
         if (next_token(parser)->kind != TK_SEMICOLON) {
                 error(&parser->token, "Expected \";\" after \")\"\n");
                 return NULL;
         }
-
-        /* Create call */
-        call = create_node(parent);
-        call->kind = NK_CALL;
-        call->callee = callee;
 
         push_node(call, NULL);
         next_token(parser);
