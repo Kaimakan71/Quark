@@ -67,10 +67,10 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
                 return NULL;
         }
 
-	if (next_token(parser)->kind == TK_RPAREN) {
-		error(&parser->token, "Expected conditions after \"(\"\n");
-		return NULL;
-	}
+        if (next_token(parser)->kind == TK_RPAREN) {
+                error(&parser->token, "Expected conditions after \"(\"\n");
+                return NULL;
+        }
 
         statement = create_node(parent);
         statement->kind = NK_IF;
@@ -113,7 +113,7 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
 
 ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
-	token_t name;
+        token_t name;
 
         DEBUG("Parsing statement...");
 
