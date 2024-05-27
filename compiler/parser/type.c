@@ -34,7 +34,7 @@ static bool parse_struct_members(parser_t* parser, ast_node_t* type)
         while (parser->token.kind != TK_RCURLY) {
                 ast_node_t* member;
 
-                member = parse_storage_declaration(parser, type);
+                member = parse_storage_declaration(parser, type, NULL);
                 if (member == NULL) {
                         return false;
                 }
@@ -118,7 +118,7 @@ ast_node_t* parse_type_declaration(parser_t* parser)
         }
 
         /* Parse aliased type */
-        if (parse_type_reference(parser, type) == NULL) {
+        if (parse_type_reference(parser, type, NULL) == NULL) {
                 delete_nodes(type);
                 return NULL;
         }
@@ -139,7 +139,7 @@ ast_node_t* parse_type_declaration(parser_t* parser)
         return type;
 }
 
-ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node)
+ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node, token_t* type_name)
 {
         ast_node_t* type;
         size_t pointer_depth;
@@ -149,23 +149,35 @@ ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node)
                 return NULL;
         }
 
-        type = find_node(&parser->token, parser->types);
+        /* Use current token if no type name was specified */
+        if (type_name == NULL) {
+                type_name = &parser->token;
+        }
+
+        /* Find type */
+        type = find_node(type_name, parser->types);
         if (type == NULL) {
-                error(&parser->token, "\"%.*s\" does not exist or is not a type\n", parser->token.length, parser->token.pos);
+                error(type_name, "\"%.*s\" does not exist or is not a type\n", type_name->length, type_name->pos);
                 return NULL;
+        }
+
+        /* Advance if the current token was used as the type name */
+        if (type_name == &parser->token) {
+                next_token(parser);
         }
 
         /* Find pointer depth */
         pointer_depth = 0;
-        while (next_token(parser)->kind == TK_STAR) {
+        while (parser->token.kind == TK_STAR) {
                 pointer_depth++;
+                next_token(parser);
         }
 
         node->type = type;
         node->pointer_depth = pointer_depth;
 
         if (node->pointer_depth > 0) {
-                node->bytes = 8;
+                node->bytes = sizeof(void*);
         } else {
                 node->bytes = node->type->bytes;
         }
@@ -181,7 +193,7 @@ ast_node_t* init_types(void)
 
         types = create_node(NULL);
 
-        create_builtin_type(types, "uint", 8, NF_NONE);
+        create_builtin_type(types, "uint", sizeof(void*), NF_NONE);
         create_builtin_type(types, "char", 1, NF_NONE);
 
         return types;

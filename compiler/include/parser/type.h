@@ -10,7 +10,7 @@
 #include <lexer/token.h>
 #include <parser/ast.h>
 
-ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node);
+ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node, token_t* type_name);
 ast_node_t* parse_type_declaration(parser_t* parser);
 ast_node_t* init_types(void);
 

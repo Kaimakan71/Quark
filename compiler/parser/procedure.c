@@ -18,7 +18,7 @@ static bool parse_parameters(parser_t* parser, ast_node_t* parent)
         while (parser->token.kind != TK_RPAREN) {
                 ast_node_t* parameter;
 
-                parameter = parse_storage_declaration(parser, parent);
+                parameter = parse_storage_declaration(parser, parent, NULL);
                 if (parameter == NULL) {
                         return false;
                 }
@@ -78,7 +78,7 @@ ast_node_t* parse_proc_declaration(parser_t* parser)
         /* Parse return type, if any */
         if (parser->token.kind == TK_ARROW) {
                 next_token(parser);
-                if (parse_type_reference(parser, procedure) == NULL) {
+                if (parse_type_reference(parser, procedure, NULL) == NULL) {
                         delete_nodes(procedure);
                         return NULL;
                 }

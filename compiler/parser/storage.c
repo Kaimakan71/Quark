@@ -9,7 +9,7 @@
 #include <parser/value.h>
 #include <parser/storage.h>
 
-ast_node_t* parse_storage_declaration(parser_t* parser, ast_node_t* parent)
+ast_node_t* parse_storage_declaration(parser_t* parser, ast_node_t* parent, token_t* type_name)
 {
         ast_node_t* variable;
 
@@ -18,7 +18,7 @@ ast_node_t* parse_storage_declaration(parser_t* parser, ast_node_t* parent)
         /* Create variable and parse type */
         variable = create_node(parent);
         variable->flags = NF_NAMED;
-        if (parse_type_reference(parser, variable) == NULL) {
+        if (parse_type_reference(parser, variable, type_name) == NULL) {
                 delete_nodes(variable);
                 return NULL;
         }
@@ -67,13 +67,13 @@ ast_node_t* parse_variable_reference(parser_t* parser, ast_node_t* parent)
         return reference;
 }
 
-ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
+ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_node_t* procedure, token_t* type_name)
 {
         ast_node_t* variable;
 
         DEBUG("Parsing local variable declaration...");
 
-        variable = parse_storage_declaration(parser, parent);
+        variable = parse_storage_declaration(parser, parent, type_name);
         if (variable == NULL) {
                 return NULL;
         }
@@ -94,7 +94,7 @@ ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_no
 
         variable->kind = NK_LOCAL_VARIABLE;
         variable->local_offset = procedure->local_size;
-        procedure->local_size += variable->type->bytes;
+        procedure->local_size += variable->bytes;
 
         push_node(variable, NULL);
         next_token(parser);

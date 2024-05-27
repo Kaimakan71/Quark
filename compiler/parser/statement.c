@@ -8,6 +8,7 @@
 #include <parser/value.h>
 #include <parser/statement.h>
 #include <parser/storage.h>
+#include <string.h>
 
 static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
@@ -112,18 +113,25 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
 
 ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
+	token_t name;
+
         DEBUG("Parsing statement...");
 
         if (parser->token.kind == TK_RETURN) {
                 return parse_return(parser, parent, procedure);
         } else if (parser->token.kind == TK_IF) {
                 return parse_if(parser, parent, procedure);
-        } else if (parser->token.kind == TK_IDENTIFIER) {
-                return parse_local_declaration(parser, parent, procedure);
         }
 
-        error(&parser->token, "Expected \"return\", \"if\", or type name\n");
-        return NULL;
+        if (parser->token.kind != TK_IDENTIFIER) {
+                error(&parser->token, "Expected statement\n");
+                return NULL;
+                
+        }
+
+        memcpy(&name, &parser->token, sizeof(token_t));
+        next_token(parser);
+        return parse_local_declaration(parser, parent, procedure, &name);
 }
 
 bool parse_statement_group(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
