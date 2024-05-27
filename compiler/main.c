@@ -28,9 +28,10 @@ static const char* node_kind_strings[] = {
         [NK_STRUCT_MEMBER] = "member",
         [NK_PROCEDURE] = "proc",
         [NK_PARAMETER] = "parameter",
+        [NK_CALL] = "call",
         [NK_RETURN] = "return",
         [NK_IF] = "if",
-        [NK_CONDITIONS] = "conditions:",
+        [NK_CONDITIONS] = "conditions",
         [NK_LOCAL_VARIABLE] = "local variable",
         [NK_VARIABLE_REFERENCE] = "variable reference",
         [NK_NUMBER] = "number"
@@ -141,6 +142,7 @@ static void print_node(ast_node_t* node)
                 printf("%lx", node->value);
                 break;
         case NK_VARIABLE_REFERENCE:
+        case NK_CALL:
                 printf("to %.*s", node->variable->name.length, node->variable->name.string);
                 break;
         }

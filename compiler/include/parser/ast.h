@@ -20,6 +20,7 @@ typedef enum {
 
         NK_PROCEDURE,
         NK_PARAMETER,
+        NK_CALL,
         NK_RETURN,
         NK_IF,
         NK_CONDITIONS,

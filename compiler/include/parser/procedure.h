@@ -10,5 +10,6 @@
 #include <parser.h>
 
 ast_node_t* parse_proc_declaration(parser_t* parser);
+ast_node_t* parse_proc_call(parser_t* parser, ast_node_t* parent, token_t* callee_name);
 
 #endif /* !_PARSER_PROCEDURE_H */

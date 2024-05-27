@@ -111,3 +111,37 @@ ast_node_t* parse_proc_declaration(parser_t* parser)
         push_node(procedure, NULL);
         return procedure;
 }
+
+ast_node_t* parse_proc_call(parser_t* parser, ast_node_t* parent, token_t* callee_name)
+{
+        ast_node_t* callee;
+        ast_node_t* call;
+
+        DEBUG("Parsing procedure call...");
+
+        callee = find_node(callee_name, parent);
+        if (callee == NULL) {
+                error(callee_name, "\"%.*s\" does not exist\n", callee_name->length, callee_name->pos);
+                return NULL;
+        }
+
+        /* TODO: Call arguments */
+        if (next_token(parser)->kind != TK_RPAREN) {
+                error(&parser->token, "Expected \")\" after \"(\"\n");
+                return NULL;
+        }
+
+        if (next_token(parser)->kind != TK_SEMICOLON) {
+                error(&parser->token, "Expected \";\" after \")\"\n");
+                return NULL;
+        }
+
+        /* Create call */
+        call = create_node(parent);
+        call->kind = NK_CALL;
+        call->callee = callee;
+
+        push_node(call, NULL);
+        next_token(parser);
+        return call;
+}

@@ -8,6 +8,7 @@
 #include <parser/value.h>
 #include <parser/statement.h>
 #include <parser/storage.h>
+#include <parser/procedure.h>
 #include <string.h>
 
 static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
@@ -131,6 +132,12 @@ ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* pr
 
         memcpy(&name, &parser->token, sizeof(token_t));
         next_token(parser);
+
+        /* TODO: Structs will eventually have methods like console.print() */
+        if (parser->token.kind == TK_LPAREN) {
+                return parse_proc_call(parser, parent, &name);
+        }
+
         return parse_local_declaration(parser, parent, procedure, &name);
 }
 
