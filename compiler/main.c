@@ -93,7 +93,7 @@ static bool parse_args(int argc, char* argv[])
                         }
 
                         if (*params[j].value != NULL) {
-                                fprintf(stderr, "Cannot use argument %s more than once\n", params[j].name);
+                                fprintf(stderr, "%s was already set\n", params[j].name);
                                 return false;
                         }
 
@@ -109,7 +109,7 @@ static bool parse_args(int argc, char* argv[])
         }
 
         if (input_filename == NULL || output_filename == NULL) {
-                fprintf(stderr, "Both an input and output filename must be set\n");
+                fprintf(stderr, "An input filename (-i) and output filename (-o) are required\n");
                 return false;
         }
 
