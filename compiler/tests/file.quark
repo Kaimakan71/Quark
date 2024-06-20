@@ -1,9 +1,0 @@
-proc open(char* filename, uint flags, uint mode) -> uint;
-proc close(uint fd) -> uint;
-
-public proc main() -> uint {
-	uint fd = open("message.txt", 0, 0);
-
-	close(fd);
-	return 0;
-}

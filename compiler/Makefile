@@ -11,7 +11,7 @@ NASMFLAGS = -f elf64
 
 OFILES = error.o hash.o \
 	lexer/char_info.o lexer/keyword.o lexer/lexer.o \
-	parser/ast.o parser/storage.o parser/type.o parser/value.o parser/statement.o parser/procedure.o parser/parser.o \
+	parser/ast.o parser/variable.o parser/type.o parser/value.o parser/statement.o parser/procedure.o parser/parser.o \
 	codegen/codegen.o \
 	main.o
 

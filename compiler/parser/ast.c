@@ -50,8 +50,8 @@ void delete_nodes(ast_node_t* top_node)
         node = top_node;
         while (node != NULL) {
                 /* Descend if not already visited */
-                if (!(node->flags & NF_VISITED) && node->children.head != NULL) {
-                        node->flags |= NF_VISITED;
+                if (node->kind != NK_UNKNOWN && node->children.head != NULL) {
+                        node->kind = NK_UNKNOWN;
                         node = node->children.head;
                         continue;
                 }

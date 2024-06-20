@@ -1,5 +1,5 @@
 /*
- * Parses storage declarations.
+ * Parses variable declarations.
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
@@ -7,13 +7,13 @@
 #include <debug.h>
 #include <parser/type.h>
 #include <parser/value.h>
-#include <parser/storage.h>
+#include <parser/variable.h>
 
-ast_node_t* parse_storage_declaration(parser_t* parser, ast_node_t* parent, token_t* type_name)
+ast_node_t* parse_variable_declaration(parser_t* parser, ast_node_t* parent, token_t* type_name)
 {
         ast_node_t* variable;
 
-        DEBUG("Parsing storage declartation...");
+        DEBUG("Parsing variable declartation...");
 
         /* Create variable and parse type */
         variable = create_node(parent);
@@ -45,14 +45,14 @@ ast_node_t* parse_storage_declaration(parser_t* parser, ast_node_t* parent, toke
         return variable;
 }
 
-ast_node_t* parse_variable_reference(parser_t* parser, ast_node_t* parent)
+ast_node_t* parse_variable_reference(parser_t* parser, ast_node_t* parent, token_t* variable_name)
 {
         ast_node_t* reference;
         ast_node_t* variable;
 
-        variable = find_node(&parser->token, parent);
+        variable = find_node(variable_name, parent);
         if (variable == NULL || variable->kind != NK_LOCAL_VARIABLE) {
-                error(&parser->token, "\"%.*s\" does not exist or is not a variable\n", parser->token.length, parser->token.pos);
+                error(variable_name, "\"%.*s\" does not exist or is not a variable\n", variable_name->length, variable_name->pos);
                 return NULL;
         }
 
@@ -73,7 +73,7 @@ ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_no
 
         DEBUG("Parsing local variable declaration...");
 
-        variable = parse_storage_declaration(parser, parent, type_name);
+        variable = parse_variable_declaration(parser, parent, type_name);
         if (variable == NULL) {
                 return NULL;
         }

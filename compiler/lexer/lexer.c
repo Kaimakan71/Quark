@@ -128,6 +128,17 @@ static void lex_number_base10(lexer_stream_t* stream, token_t* token)
         }
 }
 
+static void lex_number_base2(lexer_stream_t* stream, token_t* token)
+{
+        /* Calculate value of binary number */
+        token->value = 0;
+        stream->pos += 2;
+        while (char_info[*stream->pos] == '0' || char_info[*stream->pos] == '1') {
+                token->value <<= 1;
+                token->value += *stream->pos++ - '0';
+        }
+}
+
 static void lex_string(lexer_stream_t* stream, token_t* token)
 {
         /* Find end of string */
@@ -206,6 +217,8 @@ void lexer_stream_next(lexer_stream_t* stream, token_t* token)
 
                 if (stream->pos[0] == '0' && stream->pos[1] == 'x') {
                         lex_number_base16(stream, token);
+                } else if (stream->pos[0] == '0' && stream->pos[1] == 'b') {
+                        lex_number_base2(stream, token);
                 } else {
                         lex_number_base10(stream, token);
                 }

@@ -8,7 +8,7 @@
 #include <parser.h>
 #include <parser/procedure.h>
 #include <parser/statement.h>
-#include <parser/storage.h>
+#include <parser/variable.h>
 #include <parser/type.h>
 #include <parser/value.h>
 
@@ -19,7 +19,7 @@ static bool parse_parameters(parser_t* parser, ast_node_t* parent)
         while (parser->token.kind != TK_RPAREN) {
                 ast_node_t* parameter;
 
-                parameter = parse_storage_declaration(parser, parent, NULL);
+                parameter = parse_variable_declaration(parser, parent, NULL);
                 if (parameter == NULL) {
                         return false;
                 }
@@ -141,11 +141,6 @@ ast_node_t* parse_proc_call(parser_t* parser, ast_node_t* parent, token_t* calle
                 if (parser->token.kind == TK_COMMA && next_token(parser)->kind == TK_RPAREN) {
                         warn(&parser->token, "Extra \",\" after arguments\n");
                 }
-        }
-
-        if (next_token(parser)->kind != TK_SEMICOLON) {
-                error(&parser->token, "Expected \";\" after \")\"\n");
-                return NULL;
         }
 
         push_node(call, NULL);

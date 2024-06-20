@@ -219,10 +219,12 @@ int main(int argc, char* argv[])
         print_tree(generator.parser->types);
         print_tree(generator.parser->procedures);
 
+        /*
         generator.bytes = 8;
         if (!codegen(&generator)) {
                 fprintf(stderr, "Error encountered while generating output\n");
         }
+        */
 
         parser_destory(generator.parser);
 

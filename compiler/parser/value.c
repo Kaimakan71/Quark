@@ -5,12 +5,14 @@
  */
 #include <error.h>
 #include <debug.h>
+#include <string.h>
+#include <parser/procedure.h>
 #include <parser/value.h>
-#include <parser/storage.h>
+#include <parser/variable.h>
 
 ast_node_t* parse_value(parser_t* parser, ast_node_t* parent)
 {
-        /* TODO: Support more kinds of values */
+        token_t name;
 
         if (parser->token.kind == TK_NUMBER) {
                 ast_node_t* number;
@@ -24,10 +26,19 @@ ast_node_t* parse_value(parser_t* parser, ast_node_t* parent)
                 return number;
         }
 
-        if (parser->token.kind == TK_IDENTIFIER) {
-                return parse_variable_reference(parser, parent);
+        if (parser->token.kind != TK_IDENTIFIER) {
+                error(&parser->token, "Expected value\n");
+                return NULL;
         }
 
-        error(&parser->token, "Expected number\n");
-        return NULL;
+        /* Save name */
+        memcpy(&name, &parser->token, sizeof(token_t));
+        next_token(parser);
+
+        /* TODO: Structs will eventually have methods like console.print() */
+        if (parser->token.kind == TK_LPAREN) {
+                return parse_proc_call(parser, parent, &name);
+        }
+
+        return parse_variable_reference(parser, parent, &name);
 }

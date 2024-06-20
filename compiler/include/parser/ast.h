@@ -30,10 +30,10 @@ typedef enum {
         NK_NUMBER
 } node_kind_t;
 
-#define NF_NONE   0
-#define NF_NAMED    (1 << 0)
-#define NF_PUBLIC   (1 << 1)
-#define NF_VISITED  (1 << 2)
+#define NF_NONE    0
+#define NF_NAMED   (1 << 0)
+#define NF_PUBLIC  (1 << 1)
+#define NF_VISITED (1 << 2)
 
 struct ast_node;
 
@@ -47,7 +47,7 @@ typedef struct ast_node {
         uint8_t flags;
         name_t name;
 
-        /* Builtin type, struct, storage */
+        /* Builtin type, struct, variable */
         size_t bytes;
 
         /* Procedure */

@@ -9,7 +9,7 @@
 #include <error.h>
 #include <hash.h>
 #include <parser/type.h>
-#include <parser/storage.h>
+#include <parser/variable.h>
 
 static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uint8_t flags)
 {
@@ -34,7 +34,7 @@ static bool parse_struct_members(parser_t* parser, ast_node_t* type)
         while (parser->token.kind != TK_RCURLY) {
                 ast_node_t* member;
 
-                member = parse_storage_declaration(parser, type, NULL);
+                member = parse_variable_declaration(parser, type, NULL);
                 if (member == NULL) {
                         return false;
                 }
