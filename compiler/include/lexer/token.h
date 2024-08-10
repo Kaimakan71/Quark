@@ -49,7 +49,7 @@ typedef enum {
         TK_TILDE,
 
         /* Keywords */
-        TK_PUBLIC,
+        TK_PUB,
         TK_TYPE,
         TK_STRUCT,
         TK_PROC,

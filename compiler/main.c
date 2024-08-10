@@ -119,7 +119,7 @@ static bool parse_args(int argc, char* argv[])
 static void print_node(ast_node_t* node)
 {
         if (node->flags & NF_PUBLIC) {
-                printf("public ");
+                printf("pub ");
         }
 
         printf("%s ", node_kind_strings[node->kind]);

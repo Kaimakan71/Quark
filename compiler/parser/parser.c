@@ -23,7 +23,7 @@ static ast_node_t* parse_public_declaration(parser_t* parser)
         } else if (parser->token.kind == TK_TYPE) {
                 node = parse_type_declaration(parser);
         } else {
-                error(&parser->token, "Expected \"proc\" or \"type\" after \"public\"\n");
+                error(&parser->token, "Expected \"proc\" or \"type\" after \"pub\"\n");
                 return NULL;
         }
 
@@ -52,7 +52,7 @@ void parser_parse(parser_t* parser)
 
         next_token(parser);
         while (parser->token.kind != TK_EOF) {
-                if (parser->token.kind == TK_PUBLIC) {
+                if (parser->token.kind == TK_PUB) {
                         parse_public_declaration(parser);
                 } else if (parser->token.kind == TK_PROC) {
                         parse_proc_declaration(parser);

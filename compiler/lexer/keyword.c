@@ -63,7 +63,7 @@ void init_keywords()
         }
 
         /* Add keywords to map */
-        create_keyword("public", TK_PUBLIC);
+        create_keyword("pub", TK_PUB);
         create_keyword("type", TK_TYPE);
         create_keyword("struct", TK_STRUCT);
         create_keyword("proc", TK_PROC);
