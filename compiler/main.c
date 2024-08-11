@@ -139,11 +139,11 @@ static void print_node(ast_node_t* node)
                 printf("(%.*s)", node->type->name.length, node->type->name.string);
                 break;
         case NK_NUMBER:
-                printf("%lx", node->value);
+                printf("0x%lx", node->value);
                 break;
         case NK_VARIABLE_REFERENCE:
         case NK_CALL:
-                printf("to %.*s", node->variable->name.length, node->variable->name.string);
+                printf("%.*s()", node->variable->name.length, node->variable->name.string);
                 break;
         }
 }

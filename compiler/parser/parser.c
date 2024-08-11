@@ -3,6 +3,7 @@
  * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
  * Provided under the BSD 3-Clause license.
  */
+#include <stdbool.h>
 #include <stdlib.h>
 #include <debug.h>
 #include <error.h>
@@ -10,29 +11,6 @@
 #include <parser.h>
 #include <parser/type.h>
 #include <parser/procedure.h>
-
-static ast_node_t* parse_public_declaration(parser_t* parser)
-{
-        ast_node_t* node;
-
-        DEBUG("Parsing public declaration...");
-
-        next_token(parser);
-        if (parser->token.kind == TK_PROC) {
-                node = parse_proc_declaration(parser);
-        } else if (parser->token.kind == TK_TYPE) {
-                node = parse_type_declaration(parser);
-        } else {
-                error(&parser->token, "Expected \"proc\" or \"type\" after \"pub\"\n");
-                return NULL;
-        }
-
-        if (node != NULL) {
-                node->flags |= NF_PUBLIC;
-        }
-
-        return node;
-}
 
 void parser_destory(parser_t* parser)
 {
@@ -52,15 +30,25 @@ void parser_parse(parser_t* parser)
 
         next_token(parser);
         while (parser->token.kind != TK_EOF) {
+                ast_node_t* node;
+                bool public = false;
+
                 if (parser->token.kind == TK_PUB) {
-                        parse_public_declaration(parser);
-                } else if (parser->token.kind == TK_PROC) {
-                        parse_proc_declaration(parser);
+                        public = true;
+                        next_token(parser);
+                }
+
+                if (parser->token.kind == TK_PROC) {
+                        node = parse_proc_declaration(parser);
                 } else if (parser->token.kind == TK_TYPE) {
-                        parse_type_declaration(parser);
+                        node = parse_type_declaration(parser);
                 } else {
                         error(&parser->token, "Unexpected \"%.*s\"\n", parser->token.length, parser->token.pos);
                         break;
+                }
+
+                if (public && node != NULL) {
+                        node->flags |= NF_PUBLIC;
                 }
         }
 }
