@@ -1,13 +1,14 @@
 /*
  * Character info table.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #ifndef _LEXER_CHAR_INFO_H
 #define _LEXER_CHAR_INFO_H
 
 #include <stdint.h>
-#include <lexer/token.h>
+#include "lexer/token.h"
 
 #define CHAR_HORZ_WS (1 << 0)
 #define CHAR_VERT_WS (1 << 1)

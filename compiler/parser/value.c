@@ -1,14 +1,14 @@
 /*
  * Parses values.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
-#include <error.h>
-#include <debug.h>
-#include <string.h>
-#include <parser/procedure.h>
-#include <parser/value.h>
-#include <parser/variable.h>
+
+#include "log.h"
+#include "parser/procedure.h"
+#include "parser/value.h"
+#include "parser/variable.h"
+#include "string.h"
 
 ast_node_t* parse_value(parser_t* parser, ast_node_t* parent)
 {

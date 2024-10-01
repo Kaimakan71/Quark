@@ -1,32 +1,31 @@
 /*
  * Analyzes tokens and generates symbols.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #include <stdbool.h>
 #include <stdlib.h>
-#include <debug.h>
-#include <error.h>
-#include <lexer.h>
-#include <parser.h>
-#include <parser/type.h>
-#include <parser/procedure.h>
+#include "lexer.h"
+#include "log.h"
+#include "parser.h"
+#include "parser/type.h"
+#include "parser/procedure.h"
 
 void parser_destory(parser_t* parser)
 {
-        DEBUG("Destroying parser...");
+        debug("Destroying parser...");
 
         if (parser != NULL) {
                 delete_nodes(parser->procedures);
                 delete_nodes(parser->types);
-                lexer_stream_destroy(parser->lexer_stream);
                 free(parser);
         }
 }
 
 void parser_parse(parser_t* parser)
 {
-        DEBUG("Parsing...");
+        debug("Parsing...");
 
         next_token(parser);
         while (parser->token.kind != TK_EOF) {
@@ -57,16 +56,11 @@ parser_t* create_parser(char* source)
 {
         parser_t* parser;
 
-        DEBUG("Creating parser...");
+        debug("Creating parser...");
 
         parser = malloc(sizeof(parser_t));
 
-        parser->lexer_stream = create_lexer_stream(source);
-        if (parser->lexer_stream == NULL) {
-                free(parser);
-                return NULL;
-        }
-
+        lexer_init(&parser->lexer, source);
         parser->types = init_types();
         parser->procedures = create_node(NULL);
 

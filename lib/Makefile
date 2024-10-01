@@ -1,5 +1,5 @@
 # Standard library build configuration.
-# Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+# Copyright (c) 2023-2024, Quinn Stephens.
 # Provided under the BSD 3-Clause license.
 BINARY = lib.o
 LDFLAGS = -r

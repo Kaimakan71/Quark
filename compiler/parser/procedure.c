@@ -1,20 +1,20 @@
 /*
  * Parses procedure declarations.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
-#include <error.h>
-#include <debug.h>
-#include <parser.h>
-#include <parser/procedure.h>
-#include <parser/statement.h>
-#include <parser/variable.h>
-#include <parser/type.h>
-#include <parser/value.h>
+
+#include "log.h"
+#include "parser.h"
+#include "parser/procedure.h"
+#include "parser/statement.h"
+#include "parser/variable.h"
+#include "parser/type.h"
+#include "parser/value.h"
 
 static bool parse_parameters(parser_t* parser, ast_node_t* parent)
 {
-        DEBUG("Parsing parameters...");
+        debug("Parsing parameters...");
 
         while (parser->token.kind != TK_RPAREN) {
                 ast_node_t* parameter;
@@ -27,7 +27,7 @@ static bool parse_parameters(parser_t* parser, ast_node_t* parent)
                 /* Push parameter to parameter list */
                 parameter->kind = NK_PARAMETER;
 
-                /* TODO: Use &parent->parameters instead of NULL */
+                /* TODO: Use &parent->params instead of NULL */
                 push_node(parameter, NULL);
 
                 /* Parameters are seperated by "," */
@@ -45,7 +45,7 @@ ast_node_t* parse_proc_declaration(parser_t* parser)
 {
         ast_node_t* procedure;
 
-        DEBUG("Parsing procedure declaration...");
+        debug("Parsing procedure declaration...");
 
         if (next_token(parser)->kind != TK_IDENTIFIER) {
                 error(&parser->token, "Expected procedure name after \"proc\"\n");
@@ -118,7 +118,7 @@ ast_node_t* parse_proc_call(parser_t* parser, ast_node_t* parent, token_t* calle
         ast_node_t* callee;
         ast_node_t* call;
 
-        DEBUG("Parsing procedure call...");
+        debug("Parsing procedure call...");
 
         callee = find_node(callee_name, parent);
         if (callee == NULL) {

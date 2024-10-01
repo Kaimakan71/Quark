@@ -1,27 +1,23 @@
 /*
  * Lexer keyword storage.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #ifndef _LEXER_KEYWORD_H
 #define _LEXER_KEYWORD_H
 
-#include <name.h>
-#include <lexer/token.h>
-
-typedef struct keyword {
-        name_t name;
-        token_kind_t value;
-
-        struct keyword* next;
-} keyword_t;
+#include "hashmap.h"
+#include "lexer/token.h"
+#include "name.h"
 
 typedef struct {
-        keyword_t* head;
-        keyword_t* tail;
-} keyword_list_t;
+        hashmap_entry_t hashmap_entry;
+        name_t name;
+        token_kind_t value;
+} keyword_t;
 
-keyword_t* find_keyword(token_t* token);
-void init_keywords();
+keyword_t* keywords_find(token_t* token);
+void keywords_init();
 
 #endif /* !_LEXER_KEYWORD_H */

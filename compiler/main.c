@@ -1,15 +1,15 @@
 /*
  * Parses arguments and runs compilation.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <parser.h>
-#include <parser/ast.h>
-#include <codegen.h>
+#include "parser.h"
+#include "log.h"
 
 typedef struct {
         char* name;
@@ -23,10 +23,10 @@ static char* output_filename = NULL;
 static const char* node_kind_strings[] = {
         [NK_UNKNOWN] = "unknown",
         [NK_BUILTIN_TYPE] = "built-in type",
-        [NK_TYPE_ALIAS] = "type alias",
-        [NK_STRUCT] = "struct",
+        [NK_TYPE_ALIAS] = "alias type",
+        [NK_STRUCT] = "structure type",
         [NK_STRUCT_MEMBER] = "member",
-        [NK_PROCEDURE] = "proc",
+        [NK_PROCEDURE] = "procedure",
         [NK_PARAMETER] = "parameter",
         [NK_CALL] = "call",
         [NK_RETURN] = "return",
@@ -44,45 +44,46 @@ static param_t params[] = {
 
 static char* load_text_file(char* filename)
 {
-        FILE* file;
-        long size;
+        FILE* fp;
+        size_t size, n_read;
         char* buf;
 
-        file = fopen(filename, "rb");
-        if (file == NULL) {
+        fp = fopen(filename, "rb");
+        if (fp == NULL) {
                 return NULL;
         }
 
         /* Get file size */
-        fseek(file, 0, SEEK_END);
-        size = ftell(file);
-        fseek(file, 0, SEEK_SET);
-        if (size < 1) {
-                fclose(file);
+        fseek(fp, 0, SEEK_END);
+        size = (size_t)ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        if (size < sizeof(char)) {
+                fclose(fp);
                 return NULL;
         }
 
         /* Read entire file */
-        buf = malloc(size + 1);
-        if (fread(buf, 1, size, file) != (size_t)size) {
+        buf = malloc(size + sizeof(char));
+        n_read = fread(buf, 1, size, fp);
+        fclose(fp);
+        if (n_read != size) {
                 free(buf);
-                fclose(file);
                 return NULL;
         }
 
-        fclose(file);
+        /* Terimate string */
         buf[size] = '\0';
         return buf;
 }
 
 static bool parse_args(int argc, char* argv[])
 {
-        bool found;
-
         for (int i = 1; i < argc; i++) {
+                bool found;
+
                 found = false;
 
-                for (int j = 0; j < (sizeof(params) / sizeof(params[0])); j++) {
+                for (int j = 0; j < (int)(sizeof(params) / sizeof(params[0])); j++) {
                         if (strcmp(argv[i], params[j].name) != 0) {
                                 continue;
                         }
@@ -119,31 +120,47 @@ static bool parse_args(int argc, char* argv[])
 static void print_node(ast_node_t* node)
 {
         if (node->flags & NF_PUBLIC) {
-                printf("pub ");
+                printf("public ");
         }
 
-        printf("%s ", node_kind_strings[node->kind]);
-
-        if (node->flags & NF_NAMED) {
-                printf("%.*s ", node->name.length, node->name.string);
-        }
+        // if (node->flags & NF_NAMED) {
+        //         printf("%.*s ", (int)node->name.length, node->name.string);
+        // }
 
         switch (node->kind) {
         case NK_BUILTIN_TYPE:
         case NK_TYPE_ALIAS:
-                printf("(%lu byte(s), ptr depth %lu)", node->bytes, node->pointer_depth);
+                printf("type %.*s: %lu byte(s), pointer depth %lu\n", (int)node->name.length, node->name.string, node->bytes, node->ptr_depth);
                 break;
-        case NK_PARAMETER:
+        case NK_STRUCT:
+                printf("type %.*s: struct\n", (int)node->name.length, node->name.string);
+                break;
         case NK_STRUCT_MEMBER:
         case NK_LOCAL_VARIABLE:
-                printf("(%.*s)", node->type->name.length, node->type->name.string);
+                printf("%.*s %.*s\n", (int)node->type->name.length, node->type->name.string, (int)node->name.length, node->name.string);
+                break;
+        case NK_PROCEDURE:
+                // (int)node->type->name.length, node->type->name.string
+                printf("proc %.*s()", (int)node->name.length, node->name.string);
+                if (node->type != NULL) {
+                        printf(" -> %.*s", (int)node->name.length, node->name.string);
+                }
+                printf("\n");
+                break;
+        case NK_PARAMETER:
+                printf("%.*s %.*s (parameter)\n", (int)node->type->name.length, node->type->name.string, (int)node->name.length, node->name.string);
+                break;
+        case NK_CALL:
+                printf("%.*s()\n", (int)node->variable->name.length, node->variable->name.string);
                 break;
         case NK_NUMBER:
-                printf("0x%lx", node->value);
+                printf("0x%lx\n", node->value);
                 break;
         case NK_VARIABLE_REFERENCE:
-        case NK_CALL:
-                printf("%.*s()", node->variable->name.length, node->variable->name.string);
+                printf("%.*s\n", (int)node->variable->name.length, node->variable->name.string);
+                break;
+        default:
+                printf("%s\n", node_kind_strings[node->kind]);
                 break;
         }
 }
@@ -160,7 +177,6 @@ static void print_tree(ast_node_t* root)
                 if (!(node->flags & NF_VISITED)) {
                         printf("%*s", indent, "");
                         print_node(node);
-                        printf("\n");
 
                         node->flags |= NF_VISITED;
                         if (node->children.head != NULL) {
@@ -187,8 +203,8 @@ static void print_tree(ast_node_t* root)
 
 int main(int argc, char* argv[])
 {
+        parser_t* parser;
         char* input;
-        codegen_t generator;
 
         if (!parse_args(argc, argv)) {
                 return -1;
@@ -200,35 +216,13 @@ int main(int argc, char* argv[])
                 return -1;
         }
 
-        generator.out = fopen(output_filename, "w");
-        if (generator.out == NULL) {
-                perror(output_filename);
-                free(input);
-                return -1;
-        }
+        /* Parse and print tree */
+        parser = create_parser(input);
+        parser_parse(parser);
+        print_tree(parser->types);
+        print_tree(parser->procedures);
+        parser_destory(parser);
 
-        generator.parser = create_parser(input);
-        if (generator.parser == NULL) {
-                fclose(generator.out);
-                free(input);
-                return -1;
-        }
-
-        parser_parse(generator.parser);
-
-        print_tree(generator.parser->types);
-        print_tree(generator.parser->procedures);
-
-        /*
-        generator.bytes = 8;
-        if (!codegen(&generator)) {
-                fprintf(stderr, "Error encountered while generating output\n");
-        }
-        */
-
-        parser_destory(generator.parser);
-
-        fclose(generator.out);
         free(input);
         return 0;
 }

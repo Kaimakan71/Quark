@@ -1,13 +1,14 @@
 /*
  * AST node defintions & management.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #include <stddef.h>
 #include <stdlib.h>
-#include <error.h>
-#include <name.h>
-#include <parser/ast.h>
+#include "log.h"
+#include "name.h"
+#include "parser/ast.h"
 
 ast_node_t* create_node(ast_node_t* parent)
 {

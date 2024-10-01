@@ -1,19 +1,19 @@
 /*
  * Parses variable declarations.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
-#include <error.h>
-#include <debug.h>
-#include <parser/type.h>
-#include <parser/value.h>
-#include <parser/variable.h>
+
+#include "log.h"
+#include "parser/type.h"
+#include "parser/value.h"
+#include "parser/variable.h"
 
 ast_node_t* parse_variable_declaration(parser_t* parser, ast_node_t* parent, token_t* type_name)
 {
         ast_node_t* variable;
 
-        DEBUG("Parsing variable declartation...");
+        debug("Parsing variable declartation...");
 
         /* Create variable and parse type */
         variable = create_node(parent);
@@ -71,7 +71,7 @@ ast_node_t* parse_local_declaration(parser_t* parser, ast_node_t* parent, ast_no
 {
         ast_node_t* variable;
 
-        DEBUG("Parsing local variable declaration...");
+        debug("Parsing local variable declaration...");
 
         variable = parse_variable_declaration(parser, parent, type_name);
         if (variable == NULL) {

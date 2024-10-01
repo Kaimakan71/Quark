@@ -1,9 +1,10 @@
 /*
  * Character info table.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
-#include <lexer/char_info.h>
+
+#include "lexer/char_info.h"
 
 uint16_t char_info[256] = {
         /*

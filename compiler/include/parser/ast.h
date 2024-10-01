@@ -1,14 +1,15 @@
 /*
  * AST node defintions & management.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #ifndef _PARSER_AST_H
 #define _PARSER_AST_H
 
 #include <stdint.h>
-#include <name.h>
-#include <lexer/token.h>
+#include "lexer/token.h"
+#include "name.h"
 
 typedef enum {
         NK_UNKNOWN,
@@ -51,13 +52,13 @@ typedef struct ast_node {
         size_t bytes;
 
         /* Procedure */
-        int n_parameters;
-        ast_node_list_t parameters;
+        int n_params;
+        ast_node_list_t params;
         size_t local_size;
 
         /* Procedure, parameter, local variable */
         struct ast_node* type;
-        int pointer_depth;
+        size_t ptr_depth;
 
         /* String */
         int id;

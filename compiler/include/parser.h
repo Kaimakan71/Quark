@@ -1,16 +1,17 @@
 /*
  * Analyzes tokens and generates symbols.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #ifndef _PARSER_H
 #define _PARSER_H
 
-#include <lexer.h>
-#include <parser/ast.h>
+#include "lexer.h"
+#include "parser/ast.h"
 
 typedef struct {
-        lexer_stream_t* lexer_stream;
+        lexer_t lexer;
         token_t token;
         ast_node_t* types;
         ast_node_t* procedures;
@@ -18,7 +19,7 @@ typedef struct {
 
 static inline token_t* next_token(parser_t* parser)
 {
-        lexer_stream_next(parser->lexer_stream, &parser->token);
+        lexer_next(&parser->lexer, &parser->token);
         return &parser->token;
 }
 

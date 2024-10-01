@@ -1,14 +1,14 @@
 /*
  * Keeps track of types.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #ifndef _PARSER_TYPE_H
 #define _PARSER_TYPE_H
 
-#include <parser.h>
-#include <lexer/token.h>
-#include <parser/ast.h>
+#include "lexer/token.h"
+#include "parser.h"
 
 ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node, token_t* type_name);
 ast_node_t* parse_type_declaration(parser_t* parser);

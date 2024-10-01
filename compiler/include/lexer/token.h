@@ -1,13 +1,15 @@
 /*
  * Lexer token definitions.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #ifndef _LEXER_TOKEN_H
 #define _LEXER_TOKEN_H
 
 #include <stddef.h>
 #include <stdint.h>
+#include "hash.h"
 
 typedef enum {
         TK_UNKNOWN,
@@ -70,7 +72,7 @@ typedef struct {
         size_t length;
 
         union {
-                uint32_t hash;
+                hash_t hash;
                 uint64_t value;
         };
 } token_t;

@@ -1,15 +1,15 @@
 /*
  * Keeps track of types.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
+
 #include <stdlib.h>
 #include <string.h>
-#include <debug.h>
-#include <error.h>
-#include <hash.h>
-#include <parser/type.h>
-#include <parser/variable.h>
+#include "hash.h"
+#include "log.h"
+#include "parser/type.h"
+#include "parser/variable.h"
 
 static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uint8_t flags)
 {
@@ -28,7 +28,7 @@ static void create_builtin_type(ast_node_t* types, char* name, size_t bytes, uin
 
 static bool parse_struct_members(parser_t* parser, ast_node_t* type)
 {
-        DEBUG("Parsing struct members...");
+        debug("Parsing struct members...");
 
         type->bytes = 0;
         while (parser->token.kind != TK_RCURLY) {
@@ -60,7 +60,7 @@ static ast_node_t* parse_struct_declaration(parser_t* parser, ast_node_t* type)
 {
         type->kind = NK_STRUCT;
 
-        DEBUG("Parsing struct declaration...");
+        debug("Parsing struct declaration...");
 
         if (next_token(parser)->kind != TK_LCURLY) {
                 error(&parser->token, "Expected \"{\" after \"struct\"\n");
@@ -86,7 +86,7 @@ ast_node_t* parse_type_declaration(parser_t* parser)
 {
         ast_node_t* type;
 
-        DEBUG("Parsing type declaration...");
+        debug("Parsing type declaration...");
 
         if (next_token(parser)->kind != TK_IDENTIFIER) {
                 error(&parser->token, "Expected type name after \"type\"\n");
@@ -142,7 +142,7 @@ ast_node_t* parse_type_declaration(parser_t* parser)
 ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node, token_t* type_name)
 {
         ast_node_t* type;
-        size_t pointer_depth;
+        size_t ptr_depth;
 
         if (parser->token.kind != TK_IDENTIFIER) {
                 error(&parser->token, "Expected type name\n");
@@ -167,16 +167,16 @@ ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node, token_t* ty
         }
 
         /* Find pointer depth */
-        pointer_depth = 0;
+        ptr_depth = 0;
         while (parser->token.kind == TK_STAR) {
-                pointer_depth++;
+                ptr_depth++;
                 next_token(parser);
         }
 
         node->type = type;
-        node->pointer_depth = pointer_depth;
+        node->ptr_depth = ptr_depth;
 
-        if (node->pointer_depth > 0) {
+        if (node->ptr_depth > 0) {
                 node->bytes = sizeof(void*);
         } else {
                 node->bytes = node->type->bytes;
@@ -189,7 +189,7 @@ ast_node_t* init_types(void)
 {
         ast_node_t* types;
 
-        DEBUG("Initializing types...");
+        debug("Initializing types...");
 
         types = create_node(NULL);
 

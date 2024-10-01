@@ -1,21 +1,21 @@
 /*
  * Parses statements.
- * Copyright (c) 2023-2024, Kaimakan71 and Quark contributors.
+ * Copyright (c) 2023-2024, Quinn Stephens.
  * Provided under the BSD 3-Clause license.
  */
-#include <error.h>
-#include <debug.h>
-#include <parser/value.h>
-#include <parser/statement.h>
-#include <parser/variable.h>
-#include <parser/procedure.h>
+
 #include <string.h>
+#include "log.h"
+#include "parser/value.h"
+#include "parser/statement.h"
+#include "parser/variable.h"
+#include "parser/procedure.h"
 
 static ast_node_t* parse_return(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
         ast_node_t* statement;
 
-        DEBUG("Parsing return...");
+        debug("Parsing return...");
 
         statement = create_node(parent);
         statement->kind = NK_RETURN;
@@ -61,7 +61,7 @@ static ast_node_t* parse_if(parser_t* parser, ast_node_t* parent, ast_node_t* pr
         ast_node_t* statement;
         ast_node_t* conditions;
 
-        DEBUG("Parsing if...");
+        debug("Parsing if...");
 
         if (next_token(parser)->kind != TK_LPAREN) {
                 error(&parser->token, "Expected \"(\" after \"if\"\n");
@@ -116,7 +116,7 @@ ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* pr
 {
         token_t name;
 
-        DEBUG("Parsing statement...");
+        debug("Parsing statement...");
 
         if (parser->token.kind == TK_RETURN) {
                 return parse_return(parser, parent, procedure);
@@ -156,7 +156,7 @@ ast_node_t* parse_statement(parser_t* parser, ast_node_t* parent, ast_node_t* pr
 
 bool parse_statement_group(parser_t* parser, ast_node_t* parent, ast_node_t* procedure)
 {
-        DEBUG("Parsing statement group...");
+        debug("Parsing statement group...");
 
         while (parser->token.kind != TK_RCURLY) {
                 ast_node_t* statement;
