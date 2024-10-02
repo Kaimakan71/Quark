@@ -133,25 +133,24 @@ static void print_node(ast_node_t* node)
                 printf("type %.*s: %lu byte(s), pointer depth %lu\n", (int)node->name.length, node->name.string, node->bytes, node->ptr_depth);
                 break;
         case NK_STRUCT:
-                printf("type %.*s: struct\n", (int)node->name.length, node->name.string);
+                printf("type %.*s: struct {\n", (int)node->name.length, node->name.string);
                 break;
         case NK_STRUCT_MEMBER:
         case NK_LOCAL_VARIABLE:
-                printf("%.*s %.*s\n", (int)node->type->name.length, node->type->name.string, (int)node->name.length, node->name.string);
+                printf("%.*s %.*s;\n", (int)node->type->name.length, node->type->name.string, (int)node->name.length, node->name.string);
                 break;
         case NK_PROCEDURE:
-                // (int)node->type->name.length, node->type->name.string
                 printf("proc %.*s()", (int)node->name.length, node->name.string);
                 if (node->type != NULL) {
-                        printf(" -> %.*s", (int)node->name.length, node->name.string);
+                        printf(" -> %.*s", (int)node->type->name.length, node->type->name.string);
                 }
-                printf("\n");
+                printf(" {\n");
                 break;
         case NK_PARAMETER:
-                printf("%.*s %.*s (parameter)\n", (int)node->type->name.length, node->type->name.string, (int)node->name.length, node->name.string);
+                printf("%.*s %.*s; (parameter)\n", (int)node->type->name.length, node->type->name.string, (int)node->name.length, node->name.string);
                 break;
         case NK_CALL:
-                printf("%.*s()\n", (int)node->variable->name.length, node->variable->name.string);
+                printf("%.*s();\n", (int)node->variable->name.length, node->variable->name.string);
                 break;
         case NK_NUMBER:
                 printf("0x%lx\n", node->value);
@@ -194,6 +193,11 @@ static void print_tree(ast_node_t* root)
                 if (node->parent != NULL) {
                         node = node->parent;
                         indent -= 4;
+
+                        if (node->kind == NK_PROCEDURE || node->kind == NK_STRUCT) {
+                                printf("%*s}\n", indent, "");
+                        }
+
                         continue;
                 }
 
@@ -203,7 +207,7 @@ static void print_tree(ast_node_t* root)
 
 int main(int argc, char* argv[])
 {
-        parser_t* parser;
+        parser_t parser;
         char* input;
 
         if (!parse_args(argc, argv)) {
@@ -217,11 +221,11 @@ int main(int argc, char* argv[])
         }
 
         /* Parse and print tree */
-        parser = create_parser(input);
-        parser_parse(parser);
-        print_tree(parser->types);
-        print_tree(parser->procedures);
-        parser_destory(parser);
+        parser_init(&parser, input);
+        parser_parse(&parser);
+        print_tree(parser.types);
+        print_tree(parser.procedures);
+        parser_destory(&parser);
 
         free(input);
         return 0;

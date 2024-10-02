@@ -25,6 +25,6 @@ static inline token_t* next_token(parser_t* parser)
 
 void parser_destory(parser_t* parser);
 void parser_parse(parser_t* parser);
-parser_t* create_parser(char* source);
+void parser_init(parser_t* parser, char* source);
 
 #endif /* !_PARSER_H */

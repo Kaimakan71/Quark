@@ -40,5 +40,5 @@ ast_node_t* parse_value(parser_t* parser, ast_node_t* parent)
                 return parse_proc_call(parser, parent, &name);
         }
 
-        return parse_variable_reference(parser, parent, &name);
+        return parse_variable_reference(parent, &name);
 }

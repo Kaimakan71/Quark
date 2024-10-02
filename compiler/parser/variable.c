@@ -45,13 +45,13 @@ ast_node_t* parse_variable_declaration(parser_t* parser, ast_node_t* parent, tok
         return variable;
 }
 
-ast_node_t* parse_variable_reference(parser_t* parser, ast_node_t* parent, token_t* variable_name)
+ast_node_t* parse_variable_reference(ast_node_t* parent, token_t* variable_name)
 {
         ast_node_t* reference;
         ast_node_t* variable;
 
         variable = find_node(variable_name, parent);
-        if (variable == NULL || variable->kind != NK_LOCAL_VARIABLE) {
+        if (variable == NULL || (variable->kind != NK_LOCAL_VARIABLE && variable->kind != NK_PARAMETER)) {
                 error(variable_name, "\"%.*s\" does not exist or is not a variable\n", variable_name->length, variable_name->pos);
                 return NULL;
         }
@@ -63,7 +63,6 @@ ast_node_t* parse_variable_reference(parser_t* parser, ast_node_t* parent, token
         reference->variable = variable;
 
         push_node(reference, NULL);
-        next_token(parser);
         return reference;
 }
 

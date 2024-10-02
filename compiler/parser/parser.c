@@ -19,7 +19,6 @@ void parser_destory(parser_t* parser)
         if (parser != NULL) {
                 delete_nodes(parser->procedures);
                 delete_nodes(parser->types);
-                free(parser);
         }
 }
 
@@ -52,17 +51,11 @@ void parser_parse(parser_t* parser)
         }
 }
 
-parser_t* create_parser(char* source)
+void parser_init(parser_t *parser, char* source)
 {
-        parser_t* parser;
-
-        debug("Creating parser...");
-
-        parser = malloc(sizeof(parser_t));
+        debug("Initializing parser...");
 
         lexer_init(&parser->lexer, source);
         parser->types = init_types();
         parser->procedures = create_node(NULL);
-
-        return parser;
 }
