@@ -1,0 +1,3 @@
+pub proc main() -> uint {
+    return 0;
+}

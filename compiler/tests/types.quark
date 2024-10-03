@@ -1,0 +1,32 @@
+type EfiStatus: uint32;
+type EfiHandle: any*;
+
+type EfiTableHeader: struct {
+    uint64 signature;
+    uint32 revision;
+    uint32 headerSize;
+    uint32 crc32;
+    uint32 reserved;
+}
+
+type EfiSystemTable: struct {
+    EfiTableHeader hdr;
+
+    char* fiwmareVendor;
+    uint32 firmwareRevision;
+
+    EfiHandle consoleInHandle;
+    any* conIn;
+
+    EfiHandle consoleOutHandle;
+    any* conOut;
+
+    EfiHandle standardErrorHandle;
+    any* stdErr;
+
+    any* runtimeServices;
+    any* bootServices;
+
+    uint numberOfTableEntries;
+    any* configurationTable;
+}
