@@ -178,10 +178,15 @@ ast_node_t* parse_type_reference(parser_t* parser, ast_node_t* node, token_t* ty
 
         if (node->ptr_depth > 0) {
                 node->bytes = sizeof(void*);
-        } else {
-                node->bytes = node->type->bytes;
+                return type;
         }
 
+        if (node->type->bytes == 0) {
+                error(type_name, "\"%.*s\" can only be used as a pointer\n", node->type->name.length, node->type->name.string);
+                return NULL;
+        }
+
+        node->bytes = node->type->bytes;
         return type;
 }
 
@@ -193,6 +198,11 @@ ast_node_t* init_types(void)
 
         types = create_node(NULL);
 
+        create_builtin_type(types, "any", 0, NF_NONE);
+        create_builtin_type(types, "uint8", 1, NF_NONE);
+        create_builtin_type(types, "uint16", 2, NF_NONE);
+        create_builtin_type(types, "uint32", 4, NF_NONE);
+        create_builtin_type(types, "uint64", 8, NF_NONE);
         create_builtin_type(types, "uint", sizeof(void*), NF_NONE);
         create_builtin_type(types, "char", 1, NF_NONE);
 

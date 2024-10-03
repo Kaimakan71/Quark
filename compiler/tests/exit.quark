@@ -1,5 +1,0 @@
-proc exit(uint status);
-
-pub proc main() {
-	exit(69);
-}

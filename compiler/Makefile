@@ -17,7 +17,7 @@ ifeq ($(ENABLE_DEBUG),1)
 CFLAGS += -DENABLE_DEBUG
 endif
 
-TEST_NAMES = $(addprefix tests/,exit write file if)
+TEST_NAMES = $(addprefix tests/,return call types)
 TEST_OFILES = $(addsuffix .o,$(TEST_NAMES))
 TEST_ASMFILES = $(addsuffix .asm,$(TEST_NAMES))
 TEST_EXENAMES = $(addsuffix .elf,$(TEST_NAMES))
