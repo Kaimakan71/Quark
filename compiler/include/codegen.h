@@ -9,14 +9,8 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include "parser.h"
+#include "parser/ast.h"
 
-typedef struct {
-        parser_t* parser;
-        size_t bytes;
-        FILE* out;
-} codegen_t;
-
-bool codegen(codegen_t* generator);
+bool codegen(ast_node_t* procedures, FILE* fp, size_t word_bytes);
 
 #endif /* !_CODEGEN_H */

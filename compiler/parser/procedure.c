@@ -101,6 +101,7 @@ ast_node_t* parse_proc_declaration(parser_t* parser)
 
         /* Parse body, if any */
         if (next_token(parser)->kind != TK_RCURLY) {
+                procedure->flags |= NF_DEFINITION;
                 if (!parse_statement_group(parser, procedure, procedure)) {
                         delete_nodes(procedure);
                         return NULL;

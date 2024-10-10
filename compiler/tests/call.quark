@@ -1,5 +1,5 @@
-proc test(uint x, uint y);
+proc test(uint x);
 
 pub proc main() {
-	test(69, 420);
+	test(69);
 }

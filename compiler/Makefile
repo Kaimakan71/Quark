@@ -7,6 +7,7 @@ OFILES = \
 	log.o hash.o hashmap.o \
 	lexer/char_info.o lexer/keyword.o lexer/lexer.o \
 	parser/ast.o parser/variable.o parser/type.o parser/value.o parser/statement.o parser/procedure.o parser/parser.o \
+	codegen/codegen.o \
 	main.o
 
 CFLAGS = -Wall -Wextra -Iinclude

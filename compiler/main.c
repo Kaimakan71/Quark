@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "codegen.h"
 #include "parser.h"
 #include "log.h"
 
@@ -123,10 +124,6 @@ static void print_node(ast_node_t* node)
                 printf("public ");
         }
 
-        // if (node->flags & NF_NAMED) {
-        //         printf("%.*s ", (int)node->name.length, node->name.string);
-        // }
-
         switch (node->kind) {
         case NK_BUILTIN_TYPE:
         case NK_TYPE_ALIAS:
@@ -209,6 +206,7 @@ int main(int argc, char* argv[])
 {
         parser_t parser;
         char* input;
+        bool status;
 
         if (!parse_args(argc, argv)) {
                 return -1;
@@ -220,13 +218,19 @@ int main(int argc, char* argv[])
                 return -1;
         }
 
-        /* Parse and print tree */
         parser_init(&parser, input);
         parser_parse(&parser);
+
+        /* For debugging purposes */
         print_tree(parser.types);
         print_tree(parser.procedures);
-        parser_destory(&parser);
 
+        status = codegen(parser.procedures, stdout, sizeof(void*));
+        parser_destory(&parser);
         free(input);
+        if (!status) {
+                return -1;
+        }
+
         return 0;
 }
